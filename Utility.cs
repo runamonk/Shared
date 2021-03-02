@@ -13,6 +13,14 @@ namespace Utility
 {
     class Funcs
     {
+        public static ToolStripMenuItem AddMenuItem(ToolStrip Menu, string Caption, EventHandler Event)
+        {
+            ToolStripMenuItem t = new ToolStripMenuItem(Caption);
+            t.Click += new EventHandler(Event);
+            Menu.Items.Add(t);
+            return t;
+        }
+
         public static string AppPath(string FileName)
         {
             return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + FileName;
@@ -75,6 +83,26 @@ namespace Utility
         public static FileVersionInfo GetFileInfo(string fileName)
         {
             return FileVersionInfo.GetVersionInfo(fileName);
+        }
+
+
+        public static string GetNodePath(XmlNode xmlNode)
+        {
+            string pathName = xmlNode.Name;
+            XmlNode node = xmlNode;
+            while (true)
+            {
+                if (node.ParentNode.Name != "#document")
+                {
+                    pathName = $"{node.ParentNode.Name}/{pathName}";
+                }
+                else
+                {
+                    return pathName;
+
+                }
+                node = node.ParentNode;
+            }
         }
 
         public static string GetName()
