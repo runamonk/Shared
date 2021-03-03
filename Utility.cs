@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+//using IWshRuntimeLibrary;
+
 
 namespace Utility
 {
@@ -133,9 +135,24 @@ namespace Utility
             return b1.SequenceEqual(b2);
         }
 
+        public static Boolean IsShortcut(string FileName)
+        {
+            string ext = Path.GetExtension(FileName).ToLower();
+            if ((ext == ".lnk") || (ext == ".url"))
+                return true;
+            else
+                return false;
+        }
+
         public static Boolean IsUrl(string s)
         {
             return (s.Length <= 2048) && s.ToLower().StartsWith("www") || s.ToLower().StartsWith("http") && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
+        }
+
+        public static Boolean IsWindows7()
+        {
+            Version Ver = System.Environment.OSVersion.Version;
+            return ((Ver.Major == 6) && (Ver.Minor <= 1));
         }
 
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
@@ -159,6 +176,56 @@ namespace Utility
             }
 
             form.Location = p;
+        }
+
+        public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedArgs)
+        {
+            ParsedFileName = "";
+            ParsedFileIcon = "";
+            ParsedArgs = "";
+
+            if (!IsShortcut(FileName))
+                throw new Exception("File must be a .lnk or .url file.");
+            if (!File.Exists(FileName))
+                throw new Exception(FileName + " not found.");
+                            
+                if (Path.GetExtension(FileName).ToLower() == ".url")
+            {
+                string[] sFile = File.ReadAllLines(FileName);
+                string IconFile = "";
+                string URL = "";
+
+                string urlString = "URL=";
+                string IconFileString = "IconFile=";
+
+                foreach (string s in sFile)
+                {
+                    if (s.IndexOf(urlString) > -1)
+                        URL = s.Substring(s.IndexOf(urlString) + urlString.Length, s.Length - urlString.Length);
+                    else
+                    if (s.IndexOf(IconFileString) > -1)
+                        IconFile = s.Substring(s.IndexOf(IconFileString) + IconFileString.Length, s.Length - IconFileString.Length);
+
+                    if ((URL != "") && (IconFile != ""))
+                        break;
+                }
+
+                if (URL != "")
+                {
+                    ParsedFileName = URL;
+                    ParsedFileIcon = IconFile;
+                }
+            }
+            else
+            {
+                IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell(); //Create a new WshShell Interface
+                IWshRuntimeLibrary.IWshShortcut link = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(FileName); //Link the interface to our shortcut
+                //string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, link.IconLocation.Length-link.IconLocation.IndexOf(",")-1);
+                string IconLoc = link.IconLocation.Substring(0, link.IconLocation.IndexOf(","));
+                ParsedFileName = link.TargetPath;
+                ParsedFileIcon = IconLoc;
+                ParsedArgs = link.Arguments;
+            }
         }
 
         public static string RandomString(int size, bool lowerCase)
