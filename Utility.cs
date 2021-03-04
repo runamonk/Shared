@@ -41,6 +41,7 @@ namespace Utility
             fd.FilterIndex = 1;
             fd.CheckFileExists = true;
             fd.CheckPathExists = true;
+            fd.DereferenceLinks = false;
 
             DialogResult dr = fd.ShowDialog();
 
@@ -48,6 +49,12 @@ namespace Utility
                 return fd.FileName;
             else
                 return "";
+        }
+        public static void BrowseForFolder(string Text)
+        {
+            FolderBrowserDialog f = new FolderBrowserDialog();
+            if ((f.ShowDialog() == DialogResult.OK) && (Directory.Exists(f.SelectedPath)))
+                Text = f.SelectedPath;
         }
 
         public static string[] GetFiles(string path, string searchPattern)
@@ -86,7 +93,6 @@ namespace Utility
         {
             return FileVersionInfo.GetVersionInfo(fileName);
         }
-
 
         public static string GetNodePath(XmlNode xmlNode)
         {
@@ -178,11 +184,12 @@ namespace Utility
             form.Location = p;
         }
 
-        public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedArgs)
+        public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedArgs, out string ParsedWorkingFolder)
         {
             ParsedFileName = "";
             ParsedFileIcon = "";
             ParsedArgs = "";
+            ParsedWorkingFolder = "";
 
             if (!IsShortcut(FileName))
                 throw new Exception("File must be a .lnk or .url file.");
@@ -225,6 +232,7 @@ namespace Utility
                 ParsedFileName = link.TargetPath;
                 ParsedFileIcon = IconLoc;
                 ParsedArgs = link.Arguments;
+                ParsedWorkingFolder = link.WorkingDirectory;
             }
         }
 
