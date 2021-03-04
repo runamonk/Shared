@@ -191,22 +191,32 @@ namespace Utility
             if (!File.Exists(FileName))
                 throw new Exception(FileName + " not found.");
                             
-                if (Path.GetExtension(FileName).ToLower() == ".url")
+        if (Path.GetExtension(FileName).ToLower() == ".url")
             {
                 string[] sFile = File.ReadAllLines(FileName);
                 string IconFile = "";
                 string URL = "";
+                string WorkingFolder = "";
 
                 string urlString = "URL=";
                 string IconFileString = "IconFile=";
+                string wfString = "WorkingDirectory=";
+
+                string GetValue(string s, string lookup)
+                {
+                    return s.Substring(s.IndexOf(lookup) + lookup.Length, s.Length - lookup.Length);
+                }
 
                 foreach (string s in sFile)
                 {
                     if (s.IndexOf(urlString) > -1)
-                        URL = s.Substring(s.IndexOf(urlString) + urlString.Length, s.Length - urlString.Length);
+                        URL = GetValue(s, urlString);
                     else
                     if (s.IndexOf(IconFileString) > -1)
-                        IconFile = s.Substring(s.IndexOf(IconFileString) + IconFileString.Length, s.Length - IconFileString.Length);
+                        IconFile = GetValue(s, IconFileString);
+                    else
+                    if (s.IndexOf(wfString) > -1)
+                        WorkingFolder = GetValue(s, wfString);
 
                     if ((URL != "") && (IconFile != ""))
                         break;
@@ -216,6 +226,7 @@ namespace Utility
                 {
                     ParsedFileName = URL;
                     ParsedFileIcon = IconFile;
+                    ParsedWorkingFolder = WorkingFolder;
                 }
             }
             else
