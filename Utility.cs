@@ -8,8 +8,6 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-//using IWshRuntimeLibrary;
-
 
 namespace Utility
 {
