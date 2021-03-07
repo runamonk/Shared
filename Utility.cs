@@ -115,7 +115,7 @@ namespace Utility
 
         public static string GetName()
         {
-            return Assembly.GetExecutingAssembly().GetName().Name;
+            return Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         }
 
         public static string GetVersion()
