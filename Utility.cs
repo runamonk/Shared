@@ -162,7 +162,7 @@ namespace Utility
 
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
-            Point p = new Point(Cursor.Position.X + 10, Cursor.Position.Y - 10);
+            Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
             
             if (!IgnoreBounds)
             {
@@ -176,7 +176,7 @@ namespace Utility
                 //Width
                 if ((p.X + form.Size.Width) > Screen.PrimaryScreen.WorkingArea.Width)
                 {
-                    p.X = (p.X-((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width));
+                    p.X = (p.X - ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width));
                 }
             }
 
@@ -272,9 +272,13 @@ namespace Utility
         private const int SW_SHOWNOACTIVATE = 4;
         private const int HWND_TOPMOST = -1;
         private const uint SWP_NOACTIVATE = 0x0010;
+        private const uint SWP_NOMOVE = 0x0002;
+        private const uint SWP_NOSIZE = 0x0001;
+        private const uint SWP_NOREPOSITION = 0x0200;
+
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        static extern bool SetWindowPos(
+        private static extern bool SetWindowPos(
              int hWnd,             // Window handle
              int hWndInsertAfter,  // Placement-order handle
              int X,                // Horizontal position
@@ -284,16 +288,26 @@ namespace Utility
              uint uFlags);         // Window positioning flags
 
         [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         public static void ShowInactiveTopmost(Form frm)
         {
             ShowWindow(frm.Handle, SW_SHOWNOACTIVATE);
-            SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST,
-            frm.Left, frm.Top, frm.Width, frm.Height,
-            SWP_NOACTIVATE);
+            //SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, frm.Left, frm.Top, frm.Width, frm.Height, SWP_NOACTIVATE);
+            SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION);
         }
         #endregion
-
+        public static Image ScaleImage(Image image, int maxWidth, int maxHeight)
+        {
+            var ratioX = (double)maxWidth / image.Width;
+            var ratioY = (double)maxHeight / image.Height;
+            var ratio = Math.Min(ratioX, ratioY);
+            var newWidth = (int)(image.Width * ratio);
+            var newHeight = (int)(image.Height * ratio);
+            var newImage = new Bitmap(newWidth, newHeight);
+            using (var graphics = Graphics.FromImage(newImage))
+                graphics.DrawImage(image, 0, 0, newWidth, newHeight);
+            return newImage;
+        }
     }
 }
