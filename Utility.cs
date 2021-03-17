@@ -88,9 +88,20 @@ namespace Utility
             else
                 return null;
         }
+
         public static FileVersionInfo GetFileInfo(string fileName)
         {
             return FileVersionInfo.GetVersionInfo(fileName);
+        }
+
+        public static string GetFileName()
+        {
+            return Path.GetFileName(Application.ExecutablePath.ToString());
+        }
+
+        public static string GetFilePathAndName()
+        {
+            return Application.ExecutablePath.ToString();
         }
 
         public static string GetNodePath(XmlNode xmlNode)
