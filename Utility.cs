@@ -128,9 +128,14 @@ namespace Utility
             return Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         }
 
-        public static string GetVersion()
+        public static string GetNameAndVersion()
         {
-            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddmmyy.hhmm");
+        }
+        
+        public static Version GetVersion()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
         public static byte[] ImageToByteArray(Image image)
