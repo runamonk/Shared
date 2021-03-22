@@ -130,7 +130,7 @@ namespace Utility
 
         public static string GetNameAndVersion()
         {
-            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddmmyy.hhmm");
+            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTimeUtc(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
         }
         
         public static Version GetVersion()
