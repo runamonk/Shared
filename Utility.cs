@@ -251,6 +251,15 @@ namespace Utility
                 //string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, link.IconLocation.Length-link.IconLocation.IndexOf(",")-1);
                 string IconLoc = link.IconLocation.Substring(0, link.IconLocation.IndexOf(","));
                 ParsedFileName = link.TargetPath;
+                // Double check for exe in Program Files if not found in Program Files (x86).
+                // this shouldn't happen with > Properties > Build > Prefer 32-bit unchecked; if it does we'll handle it automatically.
+                
+                if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
+                {
+                    string s = ParsedFileName.Replace("Program Files (x86)", "Program Files");
+                    if (File.Exists(s))
+                        ParsedFileName = s;
+                }
                 ParsedFileIcon = IconLoc;
                 ParsedArgs = link.Arguments;
                 ParsedWorkingFolder = link.WorkingDirectory;
