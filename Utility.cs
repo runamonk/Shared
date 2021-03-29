@@ -34,13 +34,15 @@ namespace Utility
 
         public static string BrowseForFile()
         {
-            OpenFileDialog fd = new OpenFileDialog();
-            fd.Multiselect = false;
-            fd.Filter = "All files (*.*)|*.*";
-            fd.FilterIndex = 1;
-            fd.CheckFileExists = true;
-            fd.CheckPathExists = true;
-            fd.DereferenceLinks = false;
+            OpenFileDialog fd = new OpenFileDialog
+            {
+                Multiselect = false,
+                Filter = "All files (*.*)|*.*",
+                FilterIndex = 1,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                DereferenceLinks = false
+            };
 
             DialogResult dr = fd.ShowDialog();
 
@@ -49,13 +51,7 @@ namespace Utility
             else
                 return "";
         }
-        public static void BrowseForFolder(string Text)
-        {
-            FolderBrowserDialog f = new FolderBrowserDialog();
-            if ((f.ShowDialog() == DialogResult.OK) && (Directory.Exists(f.SelectedPath)))
-                Text = f.SelectedPath;
-        }
-
+        
         public static string[] GetFiles(string path, string searchPattern)
         {
             if (!Directory.Exists(path))
@@ -130,7 +126,7 @@ namespace Utility
 
         public static string GetNameAndVersion()
         {
-            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTimeUtc(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
+            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
         }
         
         public static Version GetVersion()
@@ -186,13 +182,13 @@ namespace Utility
                 if ((p.Y + form.Size.Height) > Screen.PrimaryScreen.WorkingArea.Height)
                 {
                     //p.Y = (p.Y - form.Size.Height);
-                    p.Y = (p.Y - ((p.Y + form.Size.Height) - Screen.PrimaryScreen.WorkingArea.Height));
+                    p.Y -= ((p.Y + form.Size.Height) - Screen.PrimaryScreen.WorkingArea.Height);
                 }
 
                 //Width
                 if ((p.X + form.Size.Width) > Screen.PrimaryScreen.WorkingArea.Width)
                 {
-                    p.X = (p.X - ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width));
+                    p.X -= ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width);
                 }
             }
 
@@ -288,7 +284,6 @@ namespace Utility
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(fileContents);            
             doc.Save(randFileName);
-            doc = null;
             return randFileName;
         }
 
