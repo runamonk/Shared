@@ -126,7 +126,12 @@ namespace Utility
 
         public static string GetNameAndVersion()
         {
+#if DEBUG
+            return Funcs.GetName() + " - **DEBUG** - v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
+#endif
+#if !DEBUG
             return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
+#endif
         }
         
         public static Version GetVersion()
@@ -287,7 +292,7 @@ namespace Utility
             return randFileName;
         }
 
-        #region ShowInactiveTopmost
+#region ShowInactiveTopmost
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
         private const int SW_SHOWNOACTIVATE = 4;
         private const int HWND_TOPMOST = -1;
@@ -316,7 +321,7 @@ namespace Utility
             //SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, frm.Left, frm.Top, frm.Width, frm.Height, SWP_NOACTIVATE);
             SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION);
         }
-        #endregion
+#endregion
         public static Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
             if ((image.Height > maxHeight) || (image.Width > maxWidth))
