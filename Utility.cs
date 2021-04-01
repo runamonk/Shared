@@ -126,12 +126,8 @@ namespace Utility
 
         public static string GetNameAndVersion()
         {
-#if DEBUG
-            return Funcs.GetName() + " - **DEBUG** - v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
-#endif
-#if !DEBUG
-            return Funcs.GetName() + " v" + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
-#endif
+            string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
+            return s + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
         }
         
         public static Version GetVersion()
