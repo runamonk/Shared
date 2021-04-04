@@ -142,6 +142,25 @@ namespace Utility
             return ms.ToArray();
         }
 
+        public static Boolean IsSame(byte[] img1, byte[] img2)
+        {
+            if ((img1 == null) || (img2 == null))
+                return false;
+
+            return img1.SequenceEqual(img2);
+        }
+
+        public static Boolean IsSame(Image img1, byte[] img2)
+        {
+            if ((img1 == null) || (img2 == null))
+                return false;
+
+            byte[] b1;
+            b1 = ImageToByteArray(img1);
+           
+            return b1.SequenceEqual(img2);
+        }
+
         public static Boolean IsSame(Image img1, Image img2)
         {
             if ((img1 == null) || (img2 == null))
@@ -277,15 +296,6 @@ namespace Utility
                 return sb.ToString().ToLower();
             else
                 return sb.ToString();
-        }
-
-        public static string SaveToCache(string fileContents)
-        {
-            string randFileName = AppPath() + "\\Cache\\" + DateTime.Now.ToString("yyyymmddhhmmssfff")  + RandomString(10, true) + ".xml";
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(fileContents);            
-            doc.Save(randFileName);
-            return randFileName;
         }
 
 #region ShowInactiveTopmost
