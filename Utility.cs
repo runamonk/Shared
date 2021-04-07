@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -51,7 +52,7 @@ namespace Utility
             else
                 return "";
         }
-        
+
         public static string[] GetFiles(string path, string searchPattern)
         {
             if (!Directory.Exists(path))
@@ -67,23 +68,75 @@ namespace Utility
             return files;
         }
 
-        public static Image GetIcon(string fileName)
+        public static Image GetIcon(string fileName, string iconIndex)
         {
+            fileName = Environment.ExpandEnvironmentVariables(fileName);
             if (File.Exists(fileName))
             {
                 string[] ImageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp", ".ico" };
 
                 if (ImageTypes.Contains(Path.GetExtension(fileName)))
                 {
-                    return (Image)(Image)(new Bitmap(new Bitmap(fileName, false)));
+                    return (Image)(new Bitmap(new Bitmap(fileName, false)));
                 }
 
                 else
-                    return (Image)(new Bitmap(Icon.ExtractAssociatedIcon(fileName).ToBitmap()));
+                {
+                    if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
+                        return (Image)(new Bitmap(Icon.ExtractAssociatedIcon(fileName).ToBitmap()));
+                    else
+                    {
+                        return (Image)(new Bitmap(GetIconEx(fileName, Convert.ToInt32(iconIndex)).ToBitmap()));
+                    }
+                }
             }
             else
                 return null;
         }
+
+        public static Icon GetIconEx(string fileName, int index)
+        {
+            IntPtr large;
+            IntPtr small;
+            ExtractIconEx(fileName, index, out large, out small, 1);
+            try
+            {
+                if (large != null)
+                    return Icon.FromHandle(large);
+                else
+                if (small != null)
+                    return Icon.FromHandle(small);
+                else
+                    return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static List<Icon> GetIcons(string fileName)
+        {
+            List <Icon> l = new List<Icon>();
+            Icon tmp;
+            int idx = 0;
+
+            while (true)
+            {
+                tmp = GetIconEx(fileName, idx);
+                if (tmp != null)
+                    l.Add(tmp);
+                else
+                    break;
+                idx++;
+            }
+
+            return l;
+        }
+
+        [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+        private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
+
 
         public static FileVersionInfo GetFileInfo(string fileName)
         {
@@ -215,7 +268,7 @@ namespace Utility
             form.Location = p;
         }
 
-        public static void ParseShortcut(string FileName, ref string ParsedFileName, ref string ParsedFileIcon, ref string ParsedArgs, ref string ParsedWorkingFolder)
+        public static void ParseShortcut(string FileName, ref string ParsedFileName, ref string ParsedFileIcon, ref string ParsedFileIconIndex, ref string ParsedArgs, ref string ParsedWorkingFolder)
         {
             if (!IsShortcut(FileName))
                 throw new Exception("File must be a .lnk or .url file.");
@@ -264,8 +317,9 @@ namespace Utility
             {
                 IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell(); //Create a new WshShell Interface
                 IWshRuntimeLibrary.IWshShortcut link = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(FileName); //Link the interface to our shortcut
-                //string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, link.IconLocation.Length-link.IconLocation.IndexOf(",")-1);
+               
                 string IconLoc = link.IconLocation.Substring(0, link.IconLocation.IndexOf(","));
+                string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, (link.IconLocation.Length-IconLoc.Length-1));
                 ParsedFileName = link.TargetPath;
                 // Double check for exe in Program Files if not found in Program Files (x86).
                 // this shouldn't happen with > Properties > Build > Prefer 32-bit unchecked; if it does we'll handle it automatically.
@@ -277,6 +331,7 @@ namespace Utility
                         ParsedFileName = s;
                 }
                 ParsedFileIcon = IconLoc;
+                ParsedFileIconIndex = IconIndex;
                 ParsedArgs = link.Arguments;
                 ParsedWorkingFolder = link.WorkingDirectory;
             }
@@ -327,7 +382,52 @@ namespace Utility
             //SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, frm.Left, frm.Top, frm.Width, frm.Height, SWP_NOACTIVATE);
             SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION);
         }
-#endregion
+        #endregion
+
+        #region GetPathsFromShellIDListArray
+
+        [DllImport("shell32.dll")]
+        public static extern int SHGetPathFromIDList(IntPtr pidl, StringBuilder pszPath);
+
+        [DllImport("shell32.dll")]
+        public static extern IntPtr ILCombine(IntPtr pidl1, IntPtr pidl2);
+
+        [DllImport("shell32.dll")]
+        public static extern void ILFree(IntPtr pidl);
+
+        const string ShellIdListArrayName = "Shell IDList Array";
+
+        public static IEnumerable<string> GetPathsFromShellIDListArray(IDataObject data)
+        {
+            if (data.GetDataPresent(ShellIdListArrayName))
+            {
+                var ms = (MemoryStream)data.GetData(ShellIdListArrayName);
+                byte[] bytes = ms.ToArray();
+
+                IntPtr p = Marshal.AllocHGlobal(bytes.Length);
+                Marshal.Copy(bytes, 0, p, bytes.Length);
+                uint cidl = (uint)Marshal.ReadInt32(p, 0);
+
+                int offset = sizeof(uint);
+                IntPtr parentpidl = (IntPtr)((int)p + (uint)Marshal.ReadInt32(p, offset));
+                StringBuilder path = new StringBuilder(256);
+                SHGetPathFromIDList(parentpidl, path);
+
+                for (int i = 1; i <= cidl; ++i)
+                {
+                    offset += sizeof(uint);
+                    IntPtr relpidl = (IntPtr)((int)p + (uint)Marshal.ReadInt32(p, offset));
+                    IntPtr abspidl = ILCombine(parentpidl, relpidl);
+                    if (SHGetPathFromIDList(abspidl, path) != 0)
+                    {
+                        yield return path.ToString();
+                    }
+                    ILFree(abspidl);
+                }
+            }
+        }
+        #endregion
+
         public static Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
             if ((image.Height > maxHeight) || (image.Width > maxWidth))
