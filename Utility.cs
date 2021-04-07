@@ -99,15 +99,22 @@ namespace Utility
             IntPtr large;
             IntPtr small;
             ExtractIconEx(fileName, index, out large, out small, 1);
+            Icon iconToReturn = null;
             try
             {
                 if (large != null)
-                    return Icon.FromHandle(large);
+                    iconToReturn = (Icon)Icon.FromHandle(large).Clone();
                 else
                 if (small != null)
-                    return Icon.FromHandle(small);
-                else
-                    return null;
+                    iconToReturn = (Icon)Icon.FromHandle(small).Clone();
+ 
+                if (iconToReturn != null)
+                {
+                    if (large != null) DestroyIcon(large);
+                    if (small != null) DestroyIcon(small);
+                    return iconToReturn;
+                }
+                return null;
             }
             catch
             {
@@ -115,28 +122,11 @@ namespace Utility
             }
         }
 
-        public static List<Icon> GetIcons(string fileName)
-        {
-            List <Icon> l = new List<Icon>();
-            Icon tmp;
-            int idx = 0;
-
-            while (true)
-            {
-                tmp = GetIconEx(fileName, idx);
-                if (tmp != null)
-                    l.Add(tmp);
-                else
-                    break;
-                idx++;
-            }
-
-            return l;
-        }
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public extern static bool DestroyIcon(IntPtr handle);
 
         [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
-
 
         public static FileVersionInfo GetFileInfo(string fileName)
         {
@@ -353,7 +343,7 @@ namespace Utility
                 return sb.ToString();
         }
 
-#region ShowInactiveTopmost
+        #region ShowInactiveTopmost
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
         private const int SW_SHOWNOACTIVATE = 4;
         private const int HWND_TOPMOST = -1;
@@ -385,7 +375,6 @@ namespace Utility
         #endregion
 
         #region GetPathsFromShellIDListArray
-
         [DllImport("shell32.dll")]
         public static extern int SHGetPathFromIDList(IntPtr pidl, StringBuilder pszPath);
 
