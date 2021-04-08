@@ -327,6 +327,11 @@ namespace Utility
             }
         }
 
+        public static int RandomNumber(int size = 99999999)
+        {
+            Random rand = new Random(size);
+            return rand.Next();
+        }
         public static string RandomString(int size, bool lowerCase)
         {
             const string src = "abcdefghijklmnopqrstuvwxyz0123456789";
