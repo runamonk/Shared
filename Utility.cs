@@ -258,7 +258,7 @@ namespace Utility
             form.Location = p;
         }
 
-        public static void ParseShortcut(string FileName, ref string ParsedFileName, ref string ParsedFileIcon, ref string ParsedFileIconIndex, ref string ParsedArgs, ref string ParsedWorkingFolder)
+        public static void ParseShortcut(string FileName, string ParsedFileName, string ParsedFileIcon, string ParsedFileIconIndex, string ParsedArgs, string ParsedWorkingFolder)
         {
             if (!IsShortcut(FileName))
                 throw new Exception("File must be a .lnk or .url file.");
