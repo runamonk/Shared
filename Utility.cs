@@ -22,23 +22,20 @@ namespace Utility
             Menu.Items.Add(t);
             return t;
         }
-
         public static string AppPath(string FileName)
         {
             return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + FileName;
         }
-
         public static string AppPath()
         {
             return Path.GetDirectoryName(Application.ExecutablePath);
         }
-
-        public static string BrowseForFile()
+        public static string BrowseForFile(string filterStr = "All files (*.*)|*.*")
         {
             OpenFileDialog fd = new OpenFileDialog
             {
                 Multiselect = false,
-                Filter = "All files (*.*)|*.*",
+                Filter = filterStr,
                 FilterIndex = 1,
                 CheckFileExists = true,
                 CheckPathExists = true,
@@ -52,7 +49,6 @@ namespace Utility
             else
                 return "";
         }
-
         public static string[] GetFiles(string path, string searchPattern)
         {
             if (!Directory.Exists(path))
@@ -67,7 +63,6 @@ namespace Utility
 
             return files;
         }
-
         public static Image GetIcon(string fileName, string iconIndex)
         {
             fileName = Environment.ExpandEnvironmentVariables(fileName);
@@ -86,14 +81,14 @@ namespace Utility
                         return (Image)(new Bitmap(Icon.ExtractAssociatedIcon(fileName).ToBitmap()));
                     else
                     {
-                        return (Image)(new Bitmap(GetIconEx(fileName, Convert.ToInt32(iconIndex)).ToBitmap()));
+                        Icon i = GetIconEx(fileName, Convert.ToInt32(iconIndex));
+                        return i?.ToBitmap();
                     }
                 }
             }
             else
                 return null;
         }
-
         public static Icon GetIconEx(string fileName, int index)
         {
             IntPtr large;
@@ -121,28 +116,22 @@ namespace Utility
                 return null;
             }
         }
-
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
         public extern static bool DestroyIcon(IntPtr handle);
-
         [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
-
         public static FileVersionInfo GetFileInfo(string fileName)
         {
             return FileVersionInfo.GetVersionInfo(fileName);
         }
-
         public static string GetFileName()
         {
             return Path.GetFileName(Application.ExecutablePath.ToString());
         }
-
         public static string GetFilePathAndName()
         {
             return Application.ExecutablePath.ToString();
         }
-
         public static string GetNodePath(XmlNode xmlNode)
         {
             string pathName = xmlNode.Name;
@@ -161,30 +150,25 @@ namespace Utility
                 node = node.ParentNode;
             }
         }
-
         public static string GetName()
         {
             return Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
         }
-
         public static string GetNameAndVersion()
         {
             string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
             return s + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
         }
-        
         public static Version GetVersion()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
-
         public static byte[] ImageToByteArray(Image image)
         {
             MemoryStream ms = new MemoryStream();
             image.Save(ms, ImageFormat.Png);
             return ms.ToArray();
         }
-
         public static Boolean IsSame(byte[] img1, byte[] img2)
         {
             if ((img1 == null) || (img2 == null))
@@ -192,7 +176,6 @@ namespace Utility
 
             return img1.SequenceEqual(img2);
         }
-
         public static Boolean IsSame(Image img1, byte[] img2)
         {
             if ((img1 == null) || (img2 == null))
@@ -203,7 +186,6 @@ namespace Utility
            
             return b1.SequenceEqual(img2);
         }
-
         public static Boolean IsSame(Image img1, Image img2)
         {
             if ((img1 == null) || (img2 == null))
@@ -214,7 +196,6 @@ namespace Utility
             b2 = ImageToByteArray(img2);
             return b1.SequenceEqual(b2);
         }
-
         public static Boolean IsShortcut(string FileName)
         {
             string ext = Path.GetExtension(FileName).ToLower();
@@ -223,18 +204,15 @@ namespace Utility
             else
                 return false;
         }
-
         public static Boolean IsUrl(string s)
         {
             return (s.Length <= 2048) && s.ToLower().StartsWith("www") || s.ToLower().StartsWith("http") && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
         }
-
         public static Boolean IsWindows7()
         {
             Version Ver = System.Environment.OSVersion.Version;
             return ((Ver.Major == 6) && (Ver.Minor <= 1));
         }
-
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
             Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
@@ -257,7 +235,6 @@ namespace Utility
 
             form.Location = p;
         }
-
         public static void ParseShortcut(string FileName, string ParsedFileName, string ParsedFileIcon, string ParsedFileIconIndex, string ParsedArgs, string ParsedWorkingFolder)
         {
             if (!IsShortcut(FileName))
@@ -326,7 +303,6 @@ namespace Utility
                 ParsedWorkingFolder = link.WorkingDirectory;
             }
         }
-
         public static int RandomNumber(int size = 99999999)
         {
             Random rand = new Random(size);
@@ -347,6 +323,8 @@ namespace Utility
             else
                 return sb.ToString();
         }
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, Int32 wMsg, bool wParam, Int32 lParam);
 
         #region ShowInactiveTopmost
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
