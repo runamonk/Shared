@@ -235,14 +235,20 @@ namespace Utility
 
             form.Location = p;
         }
-        public static void ParseShortcut(string FileName, string ParsedFileName, string ParsedFileIcon, string ParsedFileIconIndex, string ParsedArgs, string ParsedWorkingFolder)
+        public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedFileIconIndex, out string ParsedArgs, out string ParsedWorkingFolder)
         {
+            ParsedFileName = "";
+            ParsedFileIcon = "";
+            ParsedFileIconIndex = "";
+            ParsedArgs = "";
+            ParsedWorkingFolder = "";
+
             if (!IsShortcut(FileName))
                 throw new Exception("File must be a .lnk or .url file.");
             if (!File.Exists(FileName))
                 throw new Exception(FileName + " not found.");
                             
-        if (Path.GetExtension(FileName).ToLower() == ".url")
+            if (Path.GetExtension(FileName).ToLower() == ".url")
             {
                 string[] sFile = File.ReadAllLines(FileName);
                 string IconFile = "";
