@@ -68,13 +68,12 @@ namespace Utility
             fileName = Environment.ExpandEnvironmentVariables(fileName);
             if (File.Exists(fileName))
             {
-                string[] ImageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp", ".ico" };
-
+                // don't include .ico files here, let windows ExtractAssociatedIcon, this will get the best resolution icon from the ico file.
+                string[] ImageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp" }; 
                 if (ImageTypes.Contains(Path.GetExtension(fileName)))
                 {
                     return (Image)(new Bitmap(new Bitmap(fileName, false)));
                 }
-
                 else
                 {
                     if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
@@ -91,9 +90,7 @@ namespace Utility
         }
         public static Icon GetIconEx(string fileName, int index)
         {
-            IntPtr large;
-            IntPtr small;
-            ExtractIconEx(fileName, index, out large, out small, 1);
+            ExtractIconEx(fileName, index, out IntPtr large, out IntPtr small, 1);
             Icon iconToReturn = null;
             try
             {
