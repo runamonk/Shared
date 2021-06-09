@@ -5,9 +5,12 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -30,6 +33,7 @@ namespace Utility
         {
             return Path.GetDirectoryName(Application.ExecutablePath);
         }
+
         public static string BrowseForFile(string filterStr = "All files (*.*)|*.*")
         {
             OpenFileDialog fd = new OpenFileDialog
@@ -65,6 +69,9 @@ namespace Utility
         }
         public static Image GetIcon(string fileName, string iconIndex)
         {
+            if (string.IsNullOrEmpty(fileName))
+                return null;
+
             fileName = Environment.ExpandEnvironmentVariables(fileName);
             if (File.Exists(fileName))
             {
@@ -160,6 +167,27 @@ namespace Utility
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
+        public static string GetWebsiteFavIcon(string url)
+        { 
+            string result = "";
+            if ((url.ToLower().StartsWith("http://") || url.ToLower().StartsWith("https://")))
+            {
+                string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
+                HttpWebRequest w = (HttpWebRequest)HttpWebRequest.Create(baseDomain + "/favicon.ico");
+                w.AllowAutoRedirect = true;           
+                try
+                {
+                    HttpWebResponse r = (HttpWebResponse)w.GetResponse();
+                    Stream s = r.GetResponseStream();
+                    Image ico = Image.FromStream(s);
+                    result = Convert.ToBase64String(Funcs.ImageToByteArray(ico));
+                }
+                catch(WebException) 
+                {
+                }
+            }
+            return result;
+        }
         public static byte[] ImageToByteArray(Image image)
         {
             MemoryStream ms = new MemoryStream();
@@ -203,7 +231,7 @@ namespace Utility
         }
         public static Boolean IsUrl(string s)
         {
-            return (s.Length <= 2048) && s.ToLower().StartsWith("www") || s.ToLower().StartsWith("http") && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
+            return (s.ToLower().StartsWith("http://") || s.ToLower().StartsWith("https://") || s.ToLower().StartsWith("ftp://")) && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
         }
         public static Boolean IsWindows7()
         {
@@ -285,6 +313,7 @@ namespace Utility
             }
             else
             {
+                // Reference "Windows Script Host Object Model" 
                 IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell(); //Create a new WshShell Interface
                 IWshRuntimeLibrary.IWshShortcut link = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(FileName); //Link the interface to our shortcut
                
