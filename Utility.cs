@@ -240,7 +240,7 @@ namespace Utility
         }
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
-            Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
+            Point p = new Point(Cursor.Position.X - 35, Cursor.Position.Y - 50);
             
             if (!IgnoreBounds)
             {
@@ -257,7 +257,7 @@ namespace Utility
                     p.X -= ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width);
                 }
             }
-
+           
             form.Location = p;
         }
         public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedFileIconIndex, out string ParsedArgs, out string ParsedWorkingFolder)
