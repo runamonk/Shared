@@ -240,7 +240,7 @@ namespace Utility
         }
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
-            Point p = new Point(Cursor.Position.X - 35, Cursor.Position.Y - 50);
+            Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
             
             if (!IgnoreBounds)
             {
@@ -249,13 +249,24 @@ namespace Utility
                 {
                     //p.Y = (p.Y - form.Size.Height);
                     p.Y -= ((p.Y + form.Size.Height) - Screen.PrimaryScreen.WorkingArea.Height);
-                }
+                } 
+                else
+                    p.Y += -50;
+
 
                 //Width
                 if ((p.X + form.Size.Width) > Screen.PrimaryScreen.WorkingArea.Width)
                 {
                     p.X -= ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width);
-                }
+                } 
+                else
+                    p.X += -35;
+
+                if (p.Y < 0) 
+                    p.Y = 0;
+
+                if (p.X < 0)
+                    p.X = 0;
             }
            
             form.Location = p;
