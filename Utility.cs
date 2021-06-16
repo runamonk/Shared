@@ -253,7 +253,6 @@ namespace Utility
                 else
                     p.Y += -50;
 
-
                 //Width
                 if ((p.X + form.Size.Width) > Screen.PrimaryScreen.WorkingArea.Width)
                 {
