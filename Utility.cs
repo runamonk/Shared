@@ -85,9 +85,13 @@ namespace Utility
                 else
                 {
                     if (fileName.StartsWith(SHELL_APP_PREFIX))
-                    {
+                    {                       
                         ShellObject shellFile = ShellFile.FromParsingName(fileName);
-                        return shellFile.Thumbnail.Bitmap;
+                        Bitmap b = shellFile.Thumbnail.Bitmap;
+                        // Shell Apps typically have a stupid border/background, make it transparent.
+                        Color c = b.GetPixel(1, 1);
+                        b.MakeTransparent(c);
+                        return b; 
                     }
                     else
                     if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
