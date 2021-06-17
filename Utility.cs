@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.WindowsAPICodePack.Shell;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -18,6 +12,8 @@ namespace Utility
 {
     class Funcs
     {
+        public static string SHELL_APP_PREFIX = "shell:AppsFolder\\";
+
         public static ToolStripMenuItem AddMenuItem(ToolStrip Menu, string Caption, EventHandler Event)
         {
             ToolStripMenuItem t = new ToolStripMenuItem(Caption);
@@ -73,7 +69,7 @@ namespace Utility
                 return null;
 
             fileName = Environment.ExpandEnvironmentVariables(fileName);
-            if (File.Exists(fileName))
+            if (File.Exists(fileName) || (fileName.StartsWith(SHELL_APP_PREFIX)))
             {
                 // don't include .ico files here, let windows ExtractAssociatedIcon, this will get the best resolution icon from the ico file.
                 string[] ImageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp" }; 
@@ -83,6 +79,12 @@ namespace Utility
                 }
                 else
                 {
+                    if (fileName.StartsWith(SHELL_APP_PREFIX))
+                    {
+                        ShellObject shellFile = ShellFile.FromParsingName(fileName);
+                        return shellFile.Thumbnail.Bitmap;
+                    }
+                    else
                     if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
                         return (Image)(new Bitmap(Icon.ExtractAssociatedIcon(fileName).ToBitmap()));
                     else
@@ -221,6 +223,7 @@ namespace Utility
             b2 = ImageToByteArray(img2);
             return b1.SequenceEqual(b2);
         }
+        
         public static Boolean IsShortcut(string FileName)
         {
             string ext = Path.GetExtension(FileName).ToLower();
