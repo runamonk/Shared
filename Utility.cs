@@ -71,11 +71,11 @@ namespace Utility
         }
         public static string GetFileName()
         {
-            return Path.GetFileName(Application.ExecutablePath.ToString());
+            return Path.GetFileName(GetFilePathAndName());
         }
         public static string GetFilePathAndName()
         {
-            return Application.ExecutablePath.ToString();
+            return Application.ExecutablePath;
         }
         public static string GetNodePath(XmlNode xmlNode)
         {
@@ -101,9 +101,8 @@ namespace Utility
         }
         public static string GetNameAndVersion()
         {
-            FileInfo fileInfo = new FileInfo(Funcs.GetFileName());
-            string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
-            return s + GetVersion().Major.ToString() + "." + fileInfo.CreationTime.ToString("ddMMyyyy.HHmm"); //File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
+            string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");           
+            return s + GetVersion().Major.ToString() + "." + File.GetLastWriteTime(Funcs.GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
         public static Version GetVersion()
         {
