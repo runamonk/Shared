@@ -1,5 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Shell;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,8 +16,6 @@ namespace Utility
 {
     class Funcs
     {
-        public static string SHELL_APP_PREFIX = "shell:AppsFolder\\";
-
         public static ToolStripMenuItem AddMenuItem(ToolStrip Menu, string Caption, EventHandler Event)
         {
             ToolStripMenuItem t = new ToolStripMenuItem(Caption);
@@ -68,73 +65,6 @@ namespace Utility
 
             return files;
         }
-        public static Image GetIcon(string fileName, string iconIndex)
-        {
-            if (string.IsNullOrEmpty(fileName))
-                return null;
-
-            fileName = Environment.ExpandEnvironmentVariables(fileName);
-            if (File.Exists(fileName) || (fileName.StartsWith(SHELL_APP_PREFIX)))
-            {
-                // don't include .ico files here, let windows ExtractAssociatedIcon, this will get the best resolution icon from the ico file.
-                string[] ImageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp" }; 
-                if (ImageTypes.Contains(Path.GetExtension(fileName)))
-                {
-                    return (Image)(new Bitmap(new Bitmap(fileName, false)));
-                }
-                else
-                {
-                    if (fileName.StartsWith(SHELL_APP_PREFIX))
-                    {                       
-                        ShellObject shellFile = ShellFile.FromParsingName(fileName);
-                        Bitmap b = shellFile.Thumbnail.Bitmap;
-                        // Shell Apps typically have a stupid border/background, make it transparent.
-                        Color c = b.GetPixel(1, 1);
-                        b.MakeTransparent(c);
-                        return b; 
-                    }
-                    else
-                    if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
-                        return (Image)(new Bitmap(Icon.ExtractAssociatedIcon(fileName).ToBitmap()));
-                    else
-                    {
-                        Icon i = GetIconEx(fileName, Convert.ToInt32(iconIndex));
-                        return i?.ToBitmap();
-                    }
-                }
-            }
-            else
-                return null;
-        }
-        public static Icon GetIconEx(string fileName, int index)
-        {
-            ExtractIconEx(fileName, index, out IntPtr large, out IntPtr small, 1);
-            Icon iconToReturn = null;
-            try
-            {
-                if (large != null)
-                    iconToReturn = (Icon)Icon.FromHandle(large).Clone();
-                else
-                if (small != null)
-                    iconToReturn = (Icon)Icon.FromHandle(small).Clone();
- 
-                if (iconToReturn != null)
-                {
-                    if (large != null) DestroyIcon(large);
-                    if (small != null) DestroyIcon(small);
-                    return iconToReturn;
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public extern static bool DestroyIcon(IntPtr handle);
-        [DllImport("Shell32.dll", EntryPoint = "ExtractIconExW", CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        private static extern int ExtractIconEx(string sFile, int iIndex, out IntPtr piLargeVersion, out IntPtr piSmallVersion, int amountIcons);
         public static FileVersionInfo GetFileInfo(string fileName)
         {
             return FileVersionInfo.GetVersionInfo(fileName);
@@ -171,8 +101,9 @@ namespace Utility
         }
         public static string GetNameAndVersion()
         {
+            FileInfo fileInfo = new FileInfo(Funcs.GetFileName());
             string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
-            return s + GetVersion().Major.ToString() + "." + File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
+            return s + GetVersion().Major.ToString() + "." + fileInfo.CreationTime.ToString("ddMMyyyy.HHmm"); //File.GetCreationTime(Funcs.GetFileName()).ToString("ddMMyyyy.HHmm");
         }
         public static Version GetVersion()
         {
@@ -408,49 +339,6 @@ namespace Utility
             ShowWindow(frm.Handle, SW_SHOWNOACTIVATE);
             //SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, frm.Left, frm.Top, frm.Width, frm.Height, SWP_NOACTIVATE);
             SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION);
-        }
-        #endregion
-
-        #region GetPathsFromShellIDListArray
-        [DllImport("shell32.dll")]
-        public static extern int SHGetPathFromIDList(IntPtr pidl, StringBuilder pszPath);
-
-        [DllImport("shell32.dll")]
-        public static extern IntPtr ILCombine(IntPtr pidl1, IntPtr pidl2);
-
-        [DllImport("shell32.dll")]
-        public static extern void ILFree(IntPtr pidl);
-
-        const string ShellIdListArrayName = "Shell IDList Array";
-
-        public static IEnumerable<string> GetPathsFromShellIDListArray(IDataObject data)
-        {
-            if (data.GetDataPresent(ShellIdListArrayName))
-            {
-                var ms = (MemoryStream)data.GetData(ShellIdListArrayName);
-                byte[] bytes = ms.ToArray();
-
-                IntPtr p = Marshal.AllocHGlobal(bytes.Length);
-                Marshal.Copy(bytes, 0, p, bytes.Length);
-                uint cidl = (uint)Marshal.ReadInt32(p, 0);
-
-                int offset = sizeof(uint);
-                IntPtr parentpidl = (IntPtr)((int)p + (uint)Marshal.ReadInt32(p, offset));
-                StringBuilder path = new StringBuilder(256);
-                SHGetPathFromIDList(parentpidl, path);
-
-                for (int i = 1; i <= cidl; ++i)
-                {
-                    offset += sizeof(uint);
-                    IntPtr relpidl = (IntPtr)((int)p + (uint)Marshal.ReadInt32(p, offset));
-                    IntPtr abspidl = ILCombine(parentpidl, relpidl);
-                    if (SHGetPathFromIDList(abspidl, path) != 0)
-                    {
-                        yield return path.ToString();
-                    }
-                    ILFree(abspidl);
-                }
-            }
         }
         #endregion
 
