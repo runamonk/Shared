@@ -34,12 +34,19 @@ namespace Icons
                 {
                     if (fileName.StartsWith(SHELL_APP_PREFIX))
                     {                       
-                        ShellObject shellFile = ShellFile.FromParsingName(fileName);
-                        Bitmap b = shellFile.Thumbnail.Bitmap;
-                        // Shell Apps typically have a stupid border/background, make it transparent.
-                        Color c = b.GetPixel(1, 1);
-                        b.MakeTransparent(c);
-                        return b; 
+                        try
+                        {
+                            ShellObject shellFile = ShellFile.FromParsingName(fileName);
+                            Bitmap b = shellFile.Thumbnail.Bitmap;
+                            // Shell Apps typically have a stupid border/background, make it transparent.
+                            Color c = b.GetPixel(1, 1);
+                            b.MakeTransparent(c);
+                            return b;
+                        } catch (Exception ex)
+                        {
+                            Bitmap b = new Bitmap(32, 32);
+                            return b;
+                        }
                     }
                     else
                     if (string.IsNullOrEmpty(iconIndex) || (iconIndex == "0"))
