@@ -272,19 +272,31 @@ namespace Utility
                 string IconLoc = link.IconLocation.Substring(0, link.IconLocation.IndexOf(","));
                 string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, (link.IconLocation.Length-IconLoc.Length-1));
                 ParsedFileName = link.TargetPath;
-                // Double check for exe in Program Files if not found in Program Files (x86).
-                // this shouldn't happen with > Properties > Build > Prefer 32-bit unchecked; if it does we'll handle it automatically.
-                
-                if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
+
+                // There are still some shortcuts (windows 11) that cannot be parsed.
+                if (ParsedFileName == "")
                 {
-                    string s = ParsedFileName.Replace("Program Files (x86)", "Program Files");
-                    if (File.Exists(s))
-                        ParsedFileName = s;
+                    ParsedFileName = FileName;
+                    ParsedFileIcon = "";
+                    ParsedFileIconIndex = "";
+                    ParsedWorkingFolder = "";
                 }
-                ParsedFileIcon = IconLoc;
-                ParsedFileIconIndex = IconIndex;
-                ParsedArgs = link.Arguments;
-                ParsedWorkingFolder = link.WorkingDirectory;
+                else
+                {
+                    // Double check for exe in Program Files if not found in Program Files (x86).
+                    // this shouldn't happen with > Properties > Build > Prefer 32-bit unchecked; if it does we'll handle it automatically.
+
+                    if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
+                    {
+                        string s = ParsedFileName.Replace("Program Files (x86)", "Program Files");
+                        if (File.Exists(s))
+                            ParsedFileName = s;
+                    }
+                    ParsedFileIcon = IconLoc;
+                    ParsedFileIconIndex = IconIndex;
+                    ParsedArgs = link.Arguments;
+                    ParsedWorkingFolder = link.WorkingDirectory;
+                }
             }
         }
         public static int RandomNumber(int size = 99999999)
