@@ -42,7 +42,7 @@ namespace Icons
                             Color c = b.GetPixel(1, 1);
                             b.MakeTransparent(c);
                             return b;
-                        } catch (Exception ex)
+                        } catch
                         {
                             Bitmap b = new Bitmap(32, 32);
                             return b;
