@@ -362,12 +362,16 @@ namespace Utility
                 var ratio = Math.Min(ratioX, ratioY);
                 var newWidth = image.Width;
                 var newHeight = image.Height;
+                int i = 0;
 
-                if (image.Width > maxWidth)
-                    newWidth = (int)(image.Width * ratio);
-                if (image.Height > maxHeight)
-                    newHeight = (int)(image.Height * ratio);
-                
+                i = (int)(image.Width * ratio);               
+                if (i > 0) 
+                    newWidth = i;
+
+                i = (int)(image.Height * ratio);
+                if (i > 0)
+                    newHeight = i;
+
                 var newImage = new Bitmap(newWidth, newHeight);
                 using (var graphics = Graphics.FromImage(newImage))
                     graphics.DrawImage(image, 0, 0, newWidth, newHeight);
