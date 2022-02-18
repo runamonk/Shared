@@ -53,9 +53,6 @@ namespace Utility
         }
         public static string[] GetFiles(string path, string searchPattern)
         {
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-
             string[] files;
 
             if (searchPattern != "")
