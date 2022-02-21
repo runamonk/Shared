@@ -18,10 +18,21 @@ namespace Utility
     {
         public static ToolStripMenuItem AddMenuItem(ToolStrip Menu, string Caption, EventHandler Event)
         {
-            ToolStripMenuItem t = new ToolStripMenuItem(Caption);
-            t.Click += new EventHandler(Event);
-            Menu.Items.Add(t);
-            return t;
+            ToolStripMenuItem t;
+
+            if (Caption == "-")
+            {
+                Menu.Items.Add(new ToolStripSeparator());
+                return null;
+            }
+            else
+            {
+                t = new ToolStripMenuItem(Caption);
+                if (Event != null)
+                    t.Click += new EventHandler(Event);
+                Menu.Items.Add(t);
+                return t;
+            }
         }
         public static string AppPath(string FileName)
         {
@@ -146,7 +157,7 @@ namespace Utility
 
             byte[] b1;
             b1 = ImageToByteArray(img1);
-           
+
             return b1.SequenceEqual(img2);
         }
         public static Boolean IsSame(Image img1, Image img2)
