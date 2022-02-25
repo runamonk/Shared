@@ -67,9 +67,9 @@ namespace Utility
             string[] files;
 
             if (searchPattern != "")
-                files = Directory.GetFiles(path, searchPattern).OrderBy(f => new FileInfo(f).CreationTime).ToArray();
+                files = Directory.GetFiles(path, searchPattern).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
             else
-                files = Directory.GetFiles(path).OrderBy(f => new FileInfo(f).CreationTime).ToArray();
+                files = Directory.GetFiles(path).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
 
             return files;
         }
