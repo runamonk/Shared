@@ -109,7 +109,7 @@ namespace Utility
         }
         public static string GetNameAndVersion()
         {
-            string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");           
+            string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
             return s + GetVersion().Major.ToString() + "." + File.GetLastWriteTime(Funcs.GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
         public static Version GetVersion()
@@ -117,13 +117,13 @@ namespace Utility
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
         public static string GetWebsiteFavIcon(string url)
-        { 
+        {
             string result = "";
             if ((url.ToLower().StartsWith("http://") || url.ToLower().StartsWith("https://")))
             {
                 string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
                 HttpWebRequest w = (HttpWebRequest)HttpWebRequest.Create(baseDomain + "/favicon.ico");
-                w.AllowAutoRedirect = true;           
+                w.AllowAutoRedirect = true;
                 try
                 {
                     HttpWebResponse r = (HttpWebResponse)w.GetResponse();
@@ -131,7 +131,7 @@ namespace Utility
                     Image ico = Image.FromStream(s);
                     result = Convert.ToBase64String(Funcs.ImageToByteArray(ico));
                 }
-                catch(WebException) 
+                catch (WebException)
                 {
                 }
             }
@@ -170,7 +170,7 @@ namespace Utility
             b2 = ImageToByteArray(img2);
             return b1.SequenceEqual(b2);
         }
-        
+
         public static Boolean IsShortcut(string FileName)
         {
             string ext = Path.GetExtension(FileName).ToLower();
@@ -188,38 +188,41 @@ namespace Utility
             Version Ver = System.Environment.OSVersion.Version;
             return ((Ver.Major == 6) && (Ver.Minor <= 1));
         }
+
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
             Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
             
             if (!IgnoreBounds)
             {
-                //Height
-                if ((p.Y + form.Size.Height) > Screen.PrimaryScreen.WorkingArea.Height)
+                Rectangle workingArea = Screen.GetWorkingArea(p);
+
+                //Vert
+                if ((p.Y + form.Size.Height) > workingArea.Bottom)
                 {
-                    //p.Y = (p.Y - form.Size.Height);
-                    p.Y -= ((p.Y + form.Size.Height) - Screen.PrimaryScreen.WorkingArea.Height);
-                } 
+                    p.Y -= ((p.Y + form.Size.Height) - workingArea.Bottom);
+                }
                 else
                     p.Y += -50;
 
-                //Width
-                if ((p.X + form.Size.Width) > Screen.PrimaryScreen.WorkingArea.Width)
+                //Horz
+                if ((p.X + form.Size.Width) > workingArea.Right)
                 {
-                    p.X -= ((p.X + form.Size.Width)-Screen.PrimaryScreen.WorkingArea.Width);
-                } 
+                    p.X -= ((p.X + form.Size.Width) - workingArea.Right);
+                }
                 else
                     p.X += -35;
 
-                if (p.Y < 0) 
-                    p.Y = 0;
+                if (p.Y < workingArea.Top)
+                    p.Y = workingArea.Top;
 
-                if (p.X < 0)
-                    p.X = 0;
+                if (p.X < workingArea.Left)
+                    p.X = workingArea.Left;
             }
-           
+
             form.Location = p;
         }
+
         public static void ParseShortcut(string FileName, out string ParsedFileName, out string ParsedFileIcon, out string ParsedFileIconIndex, out string ParsedArgs, out string ParsedWorkingFolder)
         {
             ParsedFileName = "";
