@@ -63,10 +63,11 @@ namespace Icons
         }
         public static Icon GetIconEx(string fileName, int index)
         {
-            ExtractIconEx(fileName, index, out IntPtr large, out IntPtr small, 1);
-            Icon iconToReturn = null;
             try
             {
+                ExtractIconEx(fileName, index, out IntPtr large, out IntPtr small, 1);
+                Icon iconToReturn = null;
+
                 if (large != null)
                     iconToReturn = (Icon)Icon.FromHandle(large).Clone();
                 else
