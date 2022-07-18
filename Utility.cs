@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using Microsoft.WindowsAPICodePack.Shell;
 
 namespace Utility
 {
@@ -276,26 +277,17 @@ namespace Utility
             }
             else
             {
-                // Reference "Windows Script Host Object Model" 
-                IWshRuntimeLibrary.WshShell shell = new IWshRuntimeLibrary.WshShell(); //Create a new WshShell Interface
-                IWshRuntimeLibrary.IWshShortcut link = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(FileName); //Link the interface to our shortcut
-               
-                string IconLoc = link.IconLocation.Substring(0, link.IconLocation.IndexOf(","));
-                string IconIndex = link.IconLocation.Substring(link.IconLocation.IndexOf(",")+1, (link.IconLocation.Length-IconLoc.Length-1));
-                ParsedFileName = link.TargetPath;
-
-                // There are still some shortcuts (windows 11) that cannot be parsed.
                 if (ParsedFileName == "")
                 {
-                    ParsedFileName = FileName;
-                    ParsedFileIcon = "";
-                    ParsedFileIconIndex = "";
-                    ParsedWorkingFolder = "";
-                }
-                else
-                {
-                    // Double check for exe in Program Files if not found in Program Files (x86).
-                    // this shouldn't happen with > Properties > Build > Prefer 32-bit unchecked; if it does we'll handle it automatically.
+                    var shell = new Shell32.Shell();
+                    var lnkPath = shell.NameSpace(System.IO.Path.GetDirectoryName(FileName));
+                    var linkItem = lnkPath.Items().Item(System.IO.Path.GetFileName(FileName));
+                    var link = (Shell32.ShellLinkObject)linkItem.GetLink;
+
+                    if (link.Target.Path != "")
+                        ParsedFileName = link.Target.Path.Contains("!") ? "shell:AppsFolder\\" + link.Target.Path : link.Target.Path;
+                    else
+                        ParsedFileName = "";
 
                     if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
                     {
@@ -303,9 +295,10 @@ namespace Utility
                         if (File.Exists(s))
                             ParsedFileName = s;
                     }
-                    ParsedFileIcon = IconLoc;
-                    ParsedFileIconIndex = IconIndex;
+
                     ParsedArgs = link.Arguments;
+                    ParsedFileIcon = "";
+                    ParsedFileIconIndex = "";
                     ParsedWorkingFolder = link.WorkingDirectory;
                 }
             }

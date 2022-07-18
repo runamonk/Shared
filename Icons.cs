@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Shell;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.WindowsAPICodePack.Shell;
 
 namespace Icons
 {
