@@ -277,30 +277,27 @@ namespace Utility
             }
             else
             {
-                if (ParsedFileName == "")
+                var shell = new Shell32.Shell();
+                var lnkPath = shell.NameSpace(System.IO.Path.GetDirectoryName(FileName));
+                var linkItem = lnkPath.Items().Item(System.IO.Path.GetFileName(FileName));
+                var link = (Shell32.ShellLinkObject)linkItem.GetLink;
+
+                if (link.Target.Path != "")
+                    ParsedFileName = link.Target.Path.Contains("!") ? "shell:AppsFolder\\" + link.Target.Path : link.Target.Path;
+                else
+                    ParsedFileName = "";
+
+                if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
                 {
-                    var shell = new Shell32.Shell();
-                    var lnkPath = shell.NameSpace(System.IO.Path.GetDirectoryName(FileName));
-                    var linkItem = lnkPath.Items().Item(System.IO.Path.GetFileName(FileName));
-                    var link = (Shell32.ShellLinkObject)linkItem.GetLink;
-
-                    if (link.Target.Path != "")
-                        ParsedFileName = link.Target.Path.Contains("!") ? "shell:AppsFolder\\" + link.Target.Path : link.Target.Path;
-                    else
-                        ParsedFileName = "";
-
-                    if ((!File.Exists(ParsedFileName)) && (ParsedFileName.Contains("Program Files (x86)")))
-                    {
-                        string s = ParsedFileName.Replace("Program Files (x86)", "Program Files");
-                        if (File.Exists(s))
-                            ParsedFileName = s;
-                    }
-
-                    ParsedArgs = link.Arguments;
-                    ParsedFileIcon = "";
-                    ParsedFileIconIndex = "";
-                    ParsedWorkingFolder = link.WorkingDirectory;
+                    string s = ParsedFileName.Replace("Program Files (x86)", "Program Files");
+                    if (File.Exists(s))
+                        ParsedFileName = s;
                 }
+
+                ParsedArgs = link.Arguments;
+                ParsedFileIcon = "";
+                ParsedFileIconIndex = "";
+                ParsedWorkingFolder = link.WorkingDirectory;
             }
         }
         public static int RandomNumber(int size = 99999999)

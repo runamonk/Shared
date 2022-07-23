@@ -37,7 +37,9 @@ namespace Icons
                         try
                         {
                             ShellObject shellFile = ShellFile.FromParsingName(fileName);
-                            Bitmap b = shellFile.Thumbnail.Bitmap;
+                            shellFile.Thumbnail.AllowBiggerSize = true;
+                            //Bitmap b = shellFile.Thumbnail.Bitmap;
+                            Bitmap b = shellFile.Thumbnail.ExtraLargeBitmap;
                             // Shell Apps typically have a stupid border/background, make it transparent.
                             Color c = b.GetPixel(1, 1);
                             b.MakeTransparent(c);
