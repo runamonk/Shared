@@ -281,7 +281,9 @@ namespace Utility
                 var lnkPath = shell.NameSpace(System.IO.Path.GetDirectoryName(FileName));
                 var linkItem = lnkPath.Items().Item(System.IO.Path.GetFileName(FileName));
                 var link = (Shell32.ShellLinkObject)linkItem.GetLink;
-
+                string linkIcon;             
+                link.GetIconLocation(out linkIcon);
+                
                 if (link.Target.Path != "")
                     ParsedFileName = link.Target.Path.Contains("!") ? "shell:AppsFolder\\" + link.Target.Path : link.Target.Path;
                 else
@@ -295,7 +297,7 @@ namespace Utility
                 }
 
                 ParsedArgs = link.Arguments;
-                ParsedFileIcon = "";
+                ParsedFileIcon = linkIcon;
                 ParsedFileIconIndex = "";
                 ParsedWorkingFolder = link.WorkingDirectory;
             }
