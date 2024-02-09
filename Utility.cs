@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -42,7 +43,6 @@ namespace Utility
         {
             return Path.GetDirectoryName(Application.ExecutablePath);
         }
-
         public static string BrowseForFile(string filterStr = "All files (*.*)|*.*")
         {
             OpenFileDialog fd = new OpenFileDialog
@@ -61,6 +61,35 @@ namespace Utility
                 return fd.FileName;
             else
                 return "";
+        }
+        public static string GeneratePassword(bool incNumbers, bool incSymbols, int Size)
+        {
+            string alpha = "abcdefghijklmnopqrstuvwxyz";
+            string numbers = "0123456789";
+            string symbols = "!@#$%^&*-+=:;,";
+            string src = (alpha + (incNumbers == true ? numbers : "") + (incSymbols == true ? symbols : ""));
+
+            var sb = new StringBuilder();
+            Random RNG = new Random();
+
+            for (var i = 0; i < Size; i++)
+            {
+                var c = src[RNG.Next(0, src.Length)];
+                sb.Append(c);
+            }
+            string s = sb.ToString();
+
+            // Uppercase one random alpha character.
+            while (true)
+            {
+                int r = RNG.Next(1, s.Length);
+                if (alpha.IndexOf(s[r]) > -1)
+                {
+                    s = s.Substring(0, r) + s.Substring(r, 1).ToUpper() + s.Substring(r + 1);
+                    break;
+                }
+            }
+            return s;
         }
         public static string[] GetFiles(string path, string searchPattern)
         {
@@ -84,24 +113,6 @@ namespace Utility
         public static string GetFilePathAndName()
         {
             return Application.ExecutablePath;
-        }
-        public static string GetNodePath(XmlNode xmlNode)
-        {
-            string pathName = xmlNode.Name;
-            XmlNode node = xmlNode;
-            while (true)
-            {
-                if (node.ParentNode.Name != "#document")
-                {
-                    pathName = $"{node.ParentNode.Name}/{pathName}";
-                }
-                else
-                {
-                    return pathName;
-
-                }
-                node = node.ParentNode;
-            }
         }
         public static string GetName()
         {
@@ -160,17 +171,6 @@ namespace Utility
 
             return b1.SequenceEqual(img2);
         }
-        public static Boolean IsSame(Image img1, Image img2)
-        {
-            if ((img1 == null) || (img2 == null))
-                return false;
-
-            byte[] b1, b2;
-            b1 = ImageToByteArray(img1);
-            b2 = ImageToByteArray(img2);
-            return b1.SequenceEqual(b2);
-        }
-
         public static Boolean IsUrl(string s)
         {
             return (s.ToLower().StartsWith("http://") || s.ToLower().StartsWith("https://") || s.ToLower().StartsWith("ftp://")) && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
@@ -180,7 +180,6 @@ namespace Utility
             Version Ver = System.Environment.OSVersion.Version;
             return ((Ver.Major == 6) && (Ver.Minor <= 1));
         }
-
         public static void MoveFormToCursor(Form form, bool IgnoreBounds = false)
         {
             Point p = new Point(Cursor.Position.X, Cursor.Position.Y);
@@ -213,12 +212,6 @@ namespace Utility
             }
 
             form.Location = p;
-        }
-
-        public static int RandomNumber(int size = 99999999)
-        {
-            Random rand = new Random(size);
-            return rand.Next();
         }
         public static string RandomString(int size, bool lowerCase)
         {
@@ -297,5 +290,39 @@ namespace Utility
             else
                 return image;
         }
+
+        public static bool UseLightThemeMode()
+        {
+            try
+            {
+                string s = "1";
+                s = Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", s).ToString();
+                return (s == "1" || s == "");
+            }
+            catch { return true; }
+        }
+
+        public static void Wait(int ms)
+        {
+            var waitTimer = new System.Windows.Forms.Timer();
+            if (ms <= 0) return;
+
+            waitTimer.Interval = ms;
+            waitTimer.Enabled = true;
+            waitTimer.Start();
+
+            waitTimer.Tick += (s, e) =>
+            {
+                waitTimer.Enabled = false;
+                waitTimer.Stop();
+            };
+
+            //while (waitTimer.Enabled)
+            //{
+            //    Application.DoEvents();
+            //}
+            waitTimer.Dispose();
+        }
+
     }
 }
