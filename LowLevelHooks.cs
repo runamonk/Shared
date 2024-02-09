@@ -29,8 +29,8 @@ namespace Utility
         private LowLevelKeyboardProc _proc;
         private IntPtr _KeyboardHookID = IntPtr.Zero;
 
-        Thread mouseThread;
-        ThreadStart TStart;
+        private Thread mouseThread;
+        private ThreadStart TStart;
 
         public delegate void OnKeyEventHandler(Keys Key);
         public OnKeyEventHandler OnKeyPress;
@@ -133,7 +133,5 @@ namespace Utility
             if (mouseThread.ThreadState == System.Threading.ThreadState.Running)
                 mouseThread.Abort();
         }
-
-
     }
 }
