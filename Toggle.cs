@@ -10,7 +10,7 @@ using System.ComponentModel;
 
 namespace Utility
 {
-    public class ToggleButton : CheckBox
+    public partial class Toggle : CheckBox
     {
 
         private Color onBackColor = SystemColors.ControlDark;
@@ -18,7 +18,6 @@ namespace Utility
         private Color offBackColor = SystemColors.ControlDark;
         private Color offToggleColor = Color.Red;
         private bool solidStyle = false;
-
 
         public Color OnBackColor
         {
@@ -81,7 +80,7 @@ namespace Utility
         {
             get
             {
-                return "";//base.Text;
+                return "";
             }
 
             set
@@ -105,12 +104,10 @@ namespace Utility
             }
         }
 
-
-        public ToggleButton()
+        public Toggle()
         {
             this.MinimumSize = new Size(45, 22);
         }
-
 
         private GraphicsPath GetFigurePath()
         {
@@ -127,29 +124,29 @@ namespace Utility
             return path;
         }
 
-        protected override void OnPaint(PaintEventArgs pevent)
+        protected override void OnPaint(PaintEventArgs e)
         {
             int toggleSize = this.Height - 5;
-            pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            pevent.Graphics.Clear(this.Parent.BackColor);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.Clear(this.Parent.BackColor);
 
             if (this.Checked)
             {
                 if (solidStyle)
-                    pevent.Graphics.FillPath(new SolidBrush(onBackColor), GetFigurePath());
+                    e.Graphics.FillPath(new SolidBrush(onBackColor), GetFigurePath());
                 else 
-                    pevent.Graphics.DrawPath(new Pen(onBackColor, 2), GetFigurePath());
+                    e.Graphics.DrawPath(new Pen(onBackColor, 2), GetFigurePath());
 
-                pevent.Graphics.FillEllipse(new SolidBrush(onToggleColor), new Rectangle(this.Width - this.Height + 1, 2, toggleSize, toggleSize));
+                e.Graphics.FillEllipse(new SolidBrush(onToggleColor), new Rectangle(this.Width - this.Height + 1, 2, toggleSize, toggleSize));
             }
             else 
             {
                 if (solidStyle)
-                    pevent.Graphics.FillPath(new SolidBrush(offBackColor), GetFigurePath());
+                    e.Graphics.FillPath(new SolidBrush(offBackColor), GetFigurePath());
                 else 
-                    pevent.Graphics.DrawPath(new Pen(offBackColor, 2), GetFigurePath());
+                    e.Graphics.DrawPath(new Pen(offBackColor, 2), GetFigurePath());
 
-                pevent.Graphics.FillEllipse(new SolidBrush(offToggleColor),  new Rectangle(2, 2, toggleSize, toggleSize));
+                e.Graphics.FillEllipse(new SolidBrush(offToggleColor),  new Rectangle(2, 2, toggleSize, toggleSize));
             }
         }
     }
