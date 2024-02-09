@@ -17,6 +17,7 @@ namespace Utility
         private Color onToggleColor = Color.Green;
         private Color offBackColor = SystemColors.ControlDark;
         private Color offToggleColor = Color.Red;
+        private Color ToggleColorDisabled = SystemColors.ControlDarkDark;
         private bool solidStyle = false;
 
         public Color OnBackColor
@@ -142,11 +143,11 @@ namespace Utility
             else 
             {
                 if (solidStyle)
-                    e.Graphics.FillPath(new SolidBrush(offBackColor), GetFigurePath());
+                    e.Graphics.FillPath(new SolidBrush((Enabled ? offBackColor : ToggleColorDisabled)), GetFigurePath());
                 else 
-                    e.Graphics.DrawPath(new Pen(offBackColor, 2), GetFigurePath());
+                    e.Graphics.DrawPath(new Pen((Enabled ? offBackColor : ToggleColorDisabled), 2), GetFigurePath());
 
-                e.Graphics.FillEllipse(new SolidBrush(offToggleColor),  new Rectangle(2, 2, toggleSize, toggleSize));
+                e.Graphics.FillEllipse(new SolidBrush((Enabled ? offToggleColor : ToggleColorDisabled)),  new Rectangle(2, 2, toggleSize, toggleSize));
             }
         }
     }
