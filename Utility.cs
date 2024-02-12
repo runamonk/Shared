@@ -291,6 +291,45 @@ namespace Utility
                 return image;
         }
 
+        public static Boolean StartWithWindows
+        {
+            get
+            {
+                RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                var k = key.GetValue(Funcs.GetFileName());
+
+                if (k != null)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+            set
+            {
+                if (value == false)
+                {
+                    RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                    var k = key.GetValue(Funcs.GetFileName());
+                    if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
+                        return;
+
+                    key.DeleteValue(Funcs.GetFileName(), false);
+                    key.Close();
+                }
+                else
+                {
+                    RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                    var k = key.GetValue(Funcs.GetFileName());
+                    if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
+                        return;
+
+                    key.SetValue(Funcs.GetFileName(), '"' + Funcs.GetFilePathAndName() + '"');
+                    key.Close();
+                }
+            }
+        }
+
         public static bool UseLightThemeMode()
         {
             try
