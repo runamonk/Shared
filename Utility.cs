@@ -7,8 +7,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -115,13 +117,17 @@ namespace Utility
             return Application.ExecutablePath;
         }
         public static string GetName()
-        {
-            return Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>().Title;
+        {   
+            return Assembly.GetExecutingAssembly().GetName().Name ?? "n/a";
         }
         public static string GetNameAndVersion()
         {
             string s = ((Debugger.IsAttached) ? Funcs.GetName() + " - **DEBUG** - v" : Funcs.GetName() + " - v");
-            return s + GetVersion().Major.ToString() + "." + File.GetLastWriteTime(Funcs.GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
+            Version v = GetVersion();
+            if (v == null)
+                return "";
+
+            return v.Major.ToString() + "." + File.GetLastWriteTime(Funcs.GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
         public static Version GetVersion()
         {
@@ -295,23 +301,27 @@ namespace Utility
         {
             get
             {
-                RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-                var k = key.GetValue(Funcs.GetFileName());
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
 
-                if (k != null)
-                {
-                    return true;
-                }
-                else
+                if (key == null)
                     return false;
+
+                var k = key.GetValue(Funcs.GetFileName());
+                return (k != null);
             }
             set
             {
                 if (value == false)
                 {
-                    RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-                    var k = key.GetValue(Funcs.GetFileName());
-                    if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
+                    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                    if (key == null) return;
+
+                    object k = key.GetValue(Funcs.GetFileName());
+                    if (k is null) return;
+
+                    string s = k.ToString() ?? "";
+
+                    if (s == "" || s.Contains(Funcs.GetFilePathAndName()))
                         return;
 
                     key.DeleteValue(Funcs.GetFileName(), false);
@@ -319,10 +329,19 @@ namespace Utility
                 }
                 else
                 {
-                    RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-                    var k = key.GetValue(Funcs.GetFileName());
-                    if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
-                        return;
+                    RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                    if (key == null) return;
+
+                    object k = key.GetValue(Funcs.GetFileName());
+                    if (k is null) return;
+
+                    string s = k.ToString() ?? "";
+
+                    if (s == "" || s.Contains(Funcs.GetFilePathAndName()))
+                        return;                    
+                    
+                    //if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
+                    //    return;
 
                     key.SetValue(Funcs.GetFileName(), '"' + Funcs.GetFilePathAndName() + '"');
                     key.Close();
@@ -334,9 +353,8 @@ namespace Utility
         {
             try
             {
-                string s = "1";
-                s = Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", s).ToString();
-                return (s == "1" || s == "");
+                object o = Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", null);
+                return (o is null || o.ToString() != "0"); 
             }
             catch { return true; }
         }
@@ -356,10 +374,6 @@ namespace Utility
                 waitTimer.Stop();
             };
 
-            //while (waitTimer.Enabled)
-            //{
-            //    Application.DoEvents();
-            //}
             waitTimer.Dispose();
         }
 
