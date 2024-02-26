@@ -297,6 +297,21 @@ namespace Utility
                 return image;
         }
 
+        public static void SetColors(Control control)
+        {
+            if (UseLightThemeMode())
+            {
+                control.BackColor = SystemColors.ControlLightLight;
+                control.ForeColor = SystemColors.ControlDarkDark;
+            }
+            else
+            {
+                control.BackColor = SystemColors.ControlDarkDark;
+                control.ForeColor = SystemColors.ControlLightLight;
+
+            }
+        }
+
         public static Boolean StartWithWindows
         {
             get
