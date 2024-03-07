@@ -47,7 +47,7 @@ namespace Utility
         }
         public static string BrowseForFile(string filterStr = "All files (*.*)|*.*")
         {
-            OpenFileDialog fd = new OpenFileDialog
+            System.Windows.Forms.OpenFileDialog fd = new System.Windows.Forms.OpenFileDialog
             {
                 Multiselect = false,
                 Filter = filterStr,
@@ -160,6 +160,25 @@ namespace Utility
             image.Save(ms, ImageFormat.Png);
             return ms.ToArray();
         }
+
+        public static bool IsRunningDOShow()
+        {
+            if (!Debugger.IsAttached)
+            {
+                Process current = Process.GetCurrentProcess();
+                Process[] processes = Process.GetProcessesByName(current.ProcessName);
+
+                foreach (Process process in processes)
+                    if (process.Id != current.Id)
+                        if (Assembly.GetExecutingAssembly().Location.Replace("/", "\\") == current.MainModule.FileName)
+                        {
+                            Funcs.ShowWindow(process.MainWindowHandle, Funcs.SW_RESTORE);
+                            return true;
+                        }
+            }
+            return false;
+        }
+
         public static Boolean IsSame(byte[] img1, byte[] img2)
         {
             if ((img1 == null) || (img2 == null))
@@ -239,12 +258,15 @@ namespace Utility
 
         #region ShowInactiveTopmost
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
-        private const int SW_SHOWNOACTIVATE = 4;
+        public const int SW_SHOWNOACTIVATE = 4;
+        public const int SW_RESTORE = 9;
+
         private const int HWND_TOPMOST = -1;
         private const uint SWP_NOACTIVATE = 0x0010;
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOREPOSITION = 0x0200;
+
 
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
@@ -258,7 +280,7 @@ namespace Utility
              uint uFlags);         // Window positioning flags
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         public static void ShowInactiveTopmost(Form frm)
         {
@@ -302,13 +324,12 @@ namespace Utility
             if (UseLightThemeMode())
             {
                 control.BackColor = SystemColors.ControlLightLight;
-                control.ForeColor = SystemColors.ControlDarkDark;
+                control.ForeColor = Color.Black;
             }
             else
             {
-                control.BackColor = SystemColors.ControlDarkDark;
-                control.ForeColor = SystemColors.ControlLightLight;
-
+                control.ForeColor = Color.White;
+                control.BackColor = Color.FromArgb(45, 45, 48);
             }
         }
 
@@ -365,7 +386,7 @@ namespace Utility
         }
 
         public static bool UseLightThemeMode()
-        {
+        {           
             try
             {
                 object o = Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", null);
