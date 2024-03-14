@@ -357,7 +357,7 @@ namespace Utility
 
                     string s = k.ToString() ?? "";
 
-                    if (s == "" || s.Contains(Funcs.GetFilePathAndName()))
+                    if (s == "")
                         return;
 
                     key.DeleteValue(Funcs.GetFileName(), false);
@@ -374,10 +374,7 @@ namespace Utility
                     string s = k.ToString() ?? "";
 
                     if (s == "" || s.Contains(Funcs.GetFilePathAndName()))
-                        return;                    
-                    
-                    //if ((k != null) && (!k.ToString().Contains(Funcs.GetFilePathAndName())))
-                    //    return;
+                        return;                                      
 
                     key.SetValue(Funcs.GetFileName(), '"' + Funcs.GetFilePathAndName() + '"');
                     key.Close();
