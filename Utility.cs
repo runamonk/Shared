@@ -10,7 +10,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace Utility
 {
@@ -36,42 +35,25 @@ namespace Utility
             get
             {
                 var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-
                 var k = key?.GetValue(GetFileName());
                 return k != null;
             }
             set
             {
-                if (value == false)
+                var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                switch (value)
                 {
-                    var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
-                        true);
-
-                    var k = key?.GetValue(GetFileName());
-                    if (k is null) return;
-
-                    var s = k.ToString();
-
-                    if (s == "") return;
-
-                    key.DeleteValue(GetFileName(), false);
-                    key.Close();
+                    case false when key is null:
+                        return;
+                    case true:
+                        key?.SetValue(GetFileName(), '"' + GetFilePathAndName() + '"');
+                        break;
+                    default:
+                        key.DeleteValue(GetFileName());
+                        break;
                 }
-                else
-                {
-                    var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\",
-                        true);
 
-                    var k = key?.GetValue(GetFileName());
-                    if (k is null) return;
-
-                    var s = k.ToString();
-
-                    if (s == "" || s.Contains(GetFilePathAndName())) return;
-
-                    key.SetValue(GetFileName(), '"' + GetFilePathAndName() + '"');
-                    key.Close();
-                }
+                key?.Close();
             }
         }
 
@@ -166,7 +148,9 @@ namespace Utility
 
         public static string[] GetFiles(string path, string searchPattern)
         {
-            var files = searchPattern != "" ? Directory.GetFiles(path, searchPattern).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray() : Directory.GetFiles(path).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
+            var files = searchPattern != ""
+                ? Directory.GetFiles(path, searchPattern).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray()
+                : Directory.GetFiles(path).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
 
             return files;
         }
@@ -394,8 +378,6 @@ namespace Utility
                 waitTimer.Stop();
                 waitTimer.Dispose();
             };
-
-            
         }
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
