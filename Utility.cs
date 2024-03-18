@@ -59,10 +59,11 @@ namespace Utility
 
         public static ToolStripMenuItem AddMenuItem(ToolStrip menu, string caption, EventHandler @event)
         {
-            if (caption == "-")
+            switch (caption)
             {
-                menu.Items.Add(new ToolStripSeparator());
-                return null;
+                case "-":
+                    menu.Items.Add(new ToolStripSeparator());
+                    return null;
             }
 
             var t = new ToolStripMenuItem(caption);
@@ -96,9 +97,13 @@ namespace Utility
 
             var dr = fd.ShowDialog();
 
-            if (dr == DialogResult.OK) return fd.FileName;
-
-            return "";
+            switch (dr)
+            {
+                case DialogResult.OK:
+                    return fd.FileName;
+                default:
+                    return "";
+            }
         }
 
         public static string GeneratePassword(bool incNumbers, bool incSymbols, int size)
@@ -123,7 +128,12 @@ namespace Utility
             while (true)
             {
                 var r = rng.Next(1, s.Length);
-                if (alpha.IndexOf(s[r]) <= -1) continue;
+                switch (alpha.IndexOf(s[r]) <= -1)
+                {
+                    case true:
+                        continue;
+                }
+
                 s = s.Substring(0, r) + s.Substring(r, 1).ToUpper() + s.Substring(r + 1);
                 break;
             }
@@ -176,7 +186,11 @@ namespace Utility
         public static string GetWebsiteFavIcon(string url)
         {
             var result = "";
-            if (!url.ToLower().StartsWith("http://") && !url.ToLower().StartsWith("https://")) return result;
+            switch (url.ToLower().StartsWith("http://"))
+            {
+                case false when !url.ToLower().StartsWith("https://"):
+                    return result;
+            }
 
             var baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
             var w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
@@ -207,7 +221,11 @@ namespace Utility
 
         public static bool IsRunningDoShow()
         {
-            if (Debugger.IsAttached) return false;
+            switch (Debugger.IsAttached)
+            {
+                case true:
+                    return false;
+            }
 
             var current = Process.GetCurrentProcess();
             var processes = Process.GetProcessesByName(current.ProcessName);
@@ -255,25 +273,50 @@ namespace Utility
         {
             var p = new Point(Cursor.Position.X, Cursor.Position.Y);
 
-            if (!ignoreBounds)
+            switch (ignoreBounds)
             {
-                var workingArea = Screen.GetWorkingArea(p);
+                case false:
+                {
+                    var workingArea = Screen.GetWorkingArea(p);
 
-                //Vert
-                if (p.Y + form.Size.Height > workingArea.Bottom)
-                    p.Y -= p.Y + form.Size.Height - workingArea.Bottom;
-                else
-                    p.Y += -50;
+                    switch (p.Y + form.Size.Height > workingArea.Bottom)
+                    {
+                        //Vert
+                        case true:
+                            p.Y -= p.Y + form.Size.Height - workingArea.Bottom;
+                            break;
+                        default:
+                            p.Y += -50;
+                            break;
+                    }
 
-                //Horz
-                if (p.X + form.Size.Width > workingArea.Right)
-                    p.X -= p.X + form.Size.Width - workingArea.Right;
-                else
-                    p.X += -35;
+                    switch (p.X + form.Size.Width > workingArea.Right)
+                    {
+                        //Horz
+                        case true:
+                            p.X -= p.X + form.Size.Width - workingArea.Right;
+                            break;
+                        default:
+                            p.X += -35;
+                            break;
+                    }
 
-                if (p.Y < workingArea.Top) p.Y = workingArea.Top;
+                    switch (p.Y < workingArea.Top)
+                    {
+                        case true:
+                            p.Y = workingArea.Top;
+                            break;
+                    }
 
-                if (p.X < workingArea.Left) p.X = workingArea.Left;
+                    switch (p.X < workingArea.Left)
+                    {
+                        case true:
+                            p.X = workingArea.Left;
+                            break;
+                    }
+
+                    break;
+                }
             }
 
             form.Location = p;
@@ -290,14 +333,22 @@ namespace Utility
                 sb.Append(c);
             }
 
-            if (lowerCase) return sb.ToString().ToLower();
-
-            return sb.ToString();
+            switch (lowerCase)
+            {
+                case true:
+                    return sb.ToString().ToLower();
+                default:
+                    return sb.ToString();
+            }
         }
 
         public static Image ScaleImage(Image image, int maxWidth, int maxHeight)
         {
-            if (image.Height <= maxHeight && image.Width <= maxWidth) return image;
+            switch (image.Height <= maxHeight)
+            {
+                case true when image.Width <= maxWidth:
+                    return image;
+            }
 
             var ratioX = (double)maxWidth / image.Width;
             var ratioY = (double)maxHeight / image.Height;
@@ -306,10 +357,20 @@ namespace Utility
             var newHeight = image.Height;
 
             var i = (int)(image.Width * ratio);
-            if (i > 0) newWidth = i;
+            switch (i > 0)
+            {
+                case true:
+                    newWidth = i;
+                    break;
+            }
 
             i = (int)(image.Height * ratio);
-            if (i > 0) newHeight = i;
+            switch (i > 0)
+            {
+                case true:
+                    newHeight = i;
+                    break;
+            }
 
             var newImage = new Bitmap(newWidth, newHeight);
             using (var graphics = Graphics.FromImage(newImage))
@@ -366,7 +427,11 @@ namespace Utility
         public static void Wait(int ms)
         {
             var waitTimer = new Timer();
-            if (ms <= 0) return;
+            switch (ms <= 0)
+            {
+                case true:
+                    return;
+            }
 
             waitTimer.Interval = ms;
             waitTimer.Enabled = true;

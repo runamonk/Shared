@@ -8,20 +8,20 @@ namespace zuulWindowTracker
         public delegate void WindowChangedDelegate(IntPtr hwnd);
 
         // Constants from winuser.h
-        private const uint EVENT_SYSTEM_FOREGROUND = 3;
-        private const uint WINEVENT_OUTOFCONTEXT = 0;
-        private readonly IntPtr hhook;
+        private const uint EventSystemForeground = 3;
+        private const uint WineventOutofcontext = 0;
+        private readonly IntPtr _hhook;
 
         // Need to ensure delegate is not collected while we're using it,
         // storing it in a class field is simplest way to do this.
-        private readonly WinEventDelegate procDelegate;
+        private readonly WinEventDelegate _procDelegate;
 
         public WindowTracker()
         {
-            procDelegate = WinEventProc;
+            _procDelegate = WinEventProc;
             // Listen for foreground changes across all processes/threads on current desktop...
-            hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, procDelegate, 0, 0,
-                WINEVENT_OUTOFCONTEXT);
+            _hhook = SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, _procDelegate, 0, 0,
+                WineventOutofcontext);
         }
 
         [DllImport("user32.dll")]
@@ -35,13 +35,13 @@ namespace zuulWindowTracker
 
         ~WindowTracker()
         {
-            UnhookWinEvent(hhook);
+            UnhookWinEvent(_hhook);
         }
 
         private void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild,
             uint dwEventThread, uint dwmsEventTime)
         {
-            WindowChanged(hwnd);
+            WindowChanged?.Invoke(hwnd);
         }
 
         // Delegate and imports from pinvoke.net:
