@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace Utility
 {
@@ -167,7 +168,7 @@ namespace Utility
 
         public static string GetName()
         {
-            return Assembly.GetExecutingAssembly().GetName().Name ?? "n/a";
+            return  Assembly.GetExecutingAssembly().GetName().Name ?? "";
         }
 
         public static string GetNameAndVersion()
@@ -175,7 +176,7 @@ namespace Utility
             var v = GetVersion();
             if (v == null) return "";
 
-            return v.Major + "." + File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
+            return (GetName() + " " ?? "") + v.Major + "." + File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
 
         public static Version GetVersion()
