@@ -31,6 +31,9 @@ namespace Icons
                     return (Image)(new Bitmap(new Bitmap(fileName, false)));
                 }
                 else
+
+                broken code.
+                
                 {
                     if (fileName.StartsWith(SHELL_APP_PREFIX))
                     {                       
