@@ -16,6 +16,7 @@ namespace Utility
 {
     internal class Funcs
     {
+
         public const int SwRestore = 9;
 
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
@@ -270,6 +271,10 @@ namespace Utility
             return ver.Major == 6 && ver.Minor <= 1;
         }
 
+        public static Keys StringToKey(string key)
+        {
+            return (Keys)Enum.Parse(typeof(Keys), key);
+        }
         public static void MoveFormToCursor(Form form, bool ignoreBounds = false)
         {
             var p = new Point(Cursor.Position.X, Cursor.Position.Y);
