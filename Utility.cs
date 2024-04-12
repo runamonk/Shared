@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -275,57 +276,40 @@ namespace Utility
         {
             return (Keys)Enum.Parse(typeof(Keys), key);
         }
-        public static void MoveFormToCursor(Form form, bool ignoreBounds = false)
+
+        private static void MoveFormToPoint(Form form, Point p)
         {
-            var p = new Point(Cursor.Position.X, Cursor.Position.Y);
+            var workingArea = Screen.GetWorkingArea(p);
 
-            switch (ignoreBounds)
+            //Vert
+            if ((p.Y + form.Size.Height) > workingArea.Bottom)
             {
-                case false:
-                {
-                    var workingArea = Screen.GetWorkingArea(p);
-
-                    switch (p.Y + form.Size.Height > workingArea.Bottom)
-                    {
-                        //Vert
-                        case true:
-                            p.Y -= p.Y + form.Size.Height - workingArea.Bottom;
-                            break;
-                        default:
-                            p.Y += -50;
-                            break;
-                    }
-
-                    switch (p.X + form.Size.Width > workingArea.Right)
-                    {
-                        //Horz
-                        case true:
-                            p.X -= p.X + form.Size.Width - workingArea.Right;
-                            break;
-                        default:
-                            p.X += -35;
-                            break;
-                    }
-
-                    switch (p.Y < workingArea.Top)
-                    {
-                        case true:
-                            p.Y = workingArea.Top;
-                            break;
-                    }
-
-                    switch (p.X < workingArea.Left)
-                    {
-                        case true:
-                            p.X = workingArea.Left;
-                            break;
-                    }
-
-                    break;
-                }
+                p.Y -= ((p.Y + form.Size.Height) - workingArea.Bottom);
+            }
+            
+            //Horz
+            if ((p.X + form.Size.Width) > workingArea.Right)
+            {
+                p.X -= ((p.X + form.Size.Width) - workingArea.Right);
             }
 
+            if (p.Y < workingArea.Top)
+                p.Y = workingArea.Top;
+
+            if (p.X < workingArea.Left)
+                p.X = workingArea.Left;
+
             form.Location = p;
+        }
+
+        public static void MoveFormInBounds(Form form)
+        {
+            MoveFormToPoint(form, form.Location);
+        }
+
+        public static void MoveFormToCursor(Form form)
+        {
+            MoveFormToPoint(form, Cursor.Position);
         }
 
         public static string RandomString(int size, bool lowerCase)
