@@ -1,122 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace Utility
 {
-    public partial class Toggle : CheckBox
+    public class Toggle : CheckBox
     {
+        private Color offBackColor = SystemColors.ControlDark;
+        private Color offToggleColor = Color.Red;
 
         private Color onBackColor = SystemColors.ControlDark;
         private Color onToggleColor = Color.Green;
-        private Color offBackColor = SystemColors.ControlDark;
-        private Color offToggleColor = Color.Red;
-        private Color ToggleColorDisabled = SystemColors.ControlDarkDark;
-        private bool solidStyle = false;
+        private bool solidStyle;
+        private readonly Color ToggleColorDisabled = SystemColors.ControlDarkDark;
+
+        public Toggle()
+        {
+            MinimumSize = new Size(45, 22);
+        }
 
         public Color OnBackColor
         {
-            get
-            {
-                return onBackColor;
-            }
+            get => onBackColor;
 
             set
             {
                 onBackColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
         public Color OnToggleColor
         {
-            get
-            {
-                return onToggleColor;
-            }
+            get => onToggleColor;
 
             set
             {
                 onToggleColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
         public Color OffBackColor
         {
-            get
-            {
-                return offBackColor;
-            }
+            get => offBackColor;
 
             set
             {
                 offBackColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
         public Color OffToggleColor
         {
-            get
-            {
-                return offToggleColor;
-            }
+            get => offToggleColor;
 
             set
             {
                 offToggleColor = value;
-                this.Invalidate();
+                Invalidate();
             }
         }
 
         [Browsable(false)]
         public override string Text
         {
-            get
-            {
-                return "";
-            }
+            get => "";
 
-            set
-            {
-                base.Text = "";
-            }
+            set => base.Text = "";
         }
 
         [DefaultValue(true)]
         public bool SolidStyle
         {
-            get
-            {
-                return solidStyle;
-            }
+            get => solidStyle;
 
             set
             {
                 solidStyle = value;
-                this.Invalidate();
+                Invalidate();
             }
-        }
-
-        public Toggle()
-        {
-            this.MinimumSize = new Size(45, 22);
         }
 
         private GraphicsPath GetFigurePath()
         {
-            int arcSize = this.Height - 1;
-            Rectangle leftArc = new Rectangle(0, 0, arcSize, arcSize);
-            Rectangle rightArc = new Rectangle(this.Width - arcSize - 2, 0, arcSize, arcSize);
+            var arcSize = Height - 1;
+            var leftArc = new Rectangle(0, 0, arcSize, arcSize);
+            var rightArc = new Rectangle(Width - arcSize - 2, 0, arcSize, arcSize);
 
-            GraphicsPath path = new GraphicsPath();
+            var path = new GraphicsPath();
             path.StartFigure();
             path.AddArc(leftArc, 90, 180);
             path.AddArc(rightArc, 270, 180);
@@ -127,27 +101,29 @@ namespace Utility
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            int toggleSize = this.Height - 5;
+            var toggleSize = Height - 5;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.Clear(this.Parent.BackColor);
+            e.Graphics.Clear(Parent.BackColor);
 
-            if (this.Checked)
+            if (Checked)
             {
                 if (solidStyle)
                     e.Graphics.FillPath(new SolidBrush(onBackColor), GetFigurePath());
-                else 
+                else
                     e.Graphics.DrawPath(new Pen(onBackColor, 2), GetFigurePath());
 
-                e.Graphics.FillEllipse(new SolidBrush(onToggleColor), new Rectangle(this.Width - this.Height + 1, 2, toggleSize, toggleSize));
+                e.Graphics.FillEllipse(new SolidBrush(onToggleColor),
+                    new Rectangle(Width - Height + 1, 2, toggleSize, toggleSize));
             }
-            else 
+            else
             {
                 if (solidStyle)
-                    e.Graphics.FillPath(new SolidBrush((Enabled ? offBackColor : ToggleColorDisabled)), GetFigurePath());
-                else 
-                    e.Graphics.DrawPath(new Pen((Enabled ? offBackColor : ToggleColorDisabled), 2), GetFigurePath());
+                    e.Graphics.FillPath(new SolidBrush(Enabled ? offBackColor : ToggleColorDisabled), GetFigurePath());
+                else
+                    e.Graphics.DrawPath(new Pen(Enabled ? offBackColor : ToggleColorDisabled, 2), GetFigurePath());
 
-                e.Graphics.FillEllipse(new SolidBrush((Enabled ? offToggleColor : ToggleColorDisabled)),  new Rectangle(2, 2, toggleSize, toggleSize));
+                e.Graphics.FillEllipse(new SolidBrush(Enabled ? offToggleColor : ToggleColorDisabled),
+                    new Rectangle(2, 2, toggleSize, toggleSize));
             }
         }
     }

@@ -5,7 +5,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -17,7 +16,6 @@ namespace Utility
 {
     internal class Funcs
     {
-
         public const int SwRestore = 9;
 
         //http://www.pinvoke.net/default.aspx/user32/ShowWindow.html
@@ -170,7 +168,7 @@ namespace Utility
 
         public static string GetName()
         {
-            return  Assembly.GetExecutingAssembly().GetName().Name ?? "";
+            return Assembly.GetExecutingAssembly().GetName().Name ?? "";
         }
 
         public static string GetNameAndVersion()
@@ -178,7 +176,8 @@ namespace Utility
             var v = GetVersion();
             if (v == null) return "";
 
-            return (GetName() + " " ?? "") + v.Major + "." + File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
+            return (GetName() + " " ?? "") + v.Major + "." +
+                   File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
 
         public static Version GetVersion()
@@ -282,16 +281,10 @@ namespace Utility
             var workingArea = Screen.GetWorkingArea(p);
 
             //Vert
-            if ((p.Y + form.Size.Height) > workingArea.Bottom)
-            {
-                p.Y -= ((p.Y + form.Size.Height) - workingArea.Bottom);
-            }
-            
+            if (p.Y + form.Size.Height > workingArea.Bottom) p.Y -= p.Y + form.Size.Height - workingArea.Bottom;
+
             //Horz
-            if ((p.X + form.Size.Width) > workingArea.Right)
-            {
-                p.X -= ((p.X + form.Size.Width) - workingArea.Right);
-            }
+            if (p.X + form.Size.Width > workingArea.Right) p.X -= p.X + form.Size.Width - workingArea.Right;
 
             if (p.Y < workingArea.Top)
                 p.Y = workingArea.Top;
