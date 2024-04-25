@@ -169,7 +169,11 @@ namespace Utility
 
             files = Directory.GetFiles(path, "*.*").Where(f =>
             {
-                return exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase);
+                return (exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase)) && 
+                            !files.Any(a => {
+                                        return Path.GetFileName(a).ToLower() == Path.GetFileName(f).ToLower();
+                                      });
+
             }).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
 
             string[] folders = Directory.GetDirectories(path);
