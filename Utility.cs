@@ -107,6 +107,11 @@ namespace Utility
             }
         }
 
+        public static void Clear(Array arr)
+        {
+            Array.Clear(arr, 0, arr.Length);
+        }
+
         public static string GeneratePassword(bool incNumbers, bool incSymbols, int size)
         {
             var alpha = "abcdefghijklmnopqrstuvwxyz";
@@ -157,11 +162,22 @@ namespace Utility
             return Application.ExecutablePath;
         }
 
-        public static string[] GetFiles(string path, string searchPattern)
+        public static string[] GetFiles(string path, string extensions)
         {
-            var files = searchPattern != ""
-                ? Directory.GetFiles(path, searchPattern).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray()
-                : Directory.GetFiles(path).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
+            string[] exts = extensions.Split(',');
+            string[] files = new string[0];
+
+            files = Directory.GetFiles(path, "*.*").Where(f =>
+            {
+                return exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase);
+            }).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
+
+            string[] folders = Directory.GetDirectories(path);
+
+            foreach (string folder in folders)
+            {
+                files = files.Concat(GetFiles(folder, extensions)).ToArray();
+            }
 
             return files;
         }
