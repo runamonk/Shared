@@ -35,13 +35,13 @@ namespace Utility
         {
             get
             {
-                var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
-                var k = key?.GetValue(GetFileName());
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                object k = key?.GetValue(GetFileName());
                 return k != null;
             }
             set
             {
-                var key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
+                RegistryKey key = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\", true);
                 switch (value)
                 {
                     case false when key is null:
@@ -67,26 +67,20 @@ namespace Utility
                     return null;
             }
 
-            var t = new ToolStripMenuItem(caption);
+            ToolStripMenuItem t = new ToolStripMenuItem(caption);
             if (@event != null) t.Click += @event;
 
             menu.Items.Add(t);
             return t;
         }
 
-        public static string AppPath(string fileName)
-        {
-            return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + fileName;
-        }
+        public static string AppPath(string fileName) { return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + fileName; }
 
-        public static string AppPath()
-        {
-            return Path.GetDirectoryName(Application.ExecutablePath);
-        }
+        public static string AppPath() { return Path.GetDirectoryName(Application.ExecutablePath); }
 
         public static string BrowseForFile(string filterStr = "All files (*.*)|*.*")
         {
-            var fd = new OpenFileDialog
+            OpenFileDialog fd = new OpenFileDialog
             {
                 Multiselect = false,
                 Filter = filterStr,
@@ -96,7 +90,7 @@ namespace Utility
                 DereferenceLinks = false
             };
 
-            var dr = fd.ShowDialog();
+            DialogResult dr = fd.ShowDialog();
 
             switch (dr)
             {
@@ -107,33 +101,31 @@ namespace Utility
             }
         }
 
-        public static void Clear(Array arr)
-        {
-            Array.Clear(arr, 0, arr.Length);
-        }
+        public static void Clear(Array arr) { Array.Clear(arr, 0, arr.Length); }
+
 
         public static string GeneratePassword(bool incNumbers, bool incSymbols, int size)
         {
-            var alpha = "abcdefghijklmnopqrstuvwxyz";
-            var numbers = "0123456789";
-            var symbols = "!@#$%^&*-+=:;,";
-            var src = alpha + (incNumbers ? numbers : "") + (incSymbols ? symbols : "");
+            string alpha = "abcdefghijklmnopqrstuvwxyz";
+            string numbers = "0123456789";
+            string symbols = "!@#$%^&*-+=:;,";
+            string src = alpha + (incNumbers ? numbers : "") + (incSymbols ? symbols : "");
 
-            var sb = new StringBuilder();
-            var rng = new Random();
+            StringBuilder sb = new StringBuilder();
+            Random rng = new Random();
 
-            for (var i = 0; i < size; i++)
+            for (int i = 0; i < size; i++)
             {
-                var c = src[rng.Next(0, src.Length)];
+                char c = src[rng.Next(0, src.Length)];
                 sb.Append(c);
             }
 
-            var s = sb.ToString();
+            string s = sb.ToString();
 
             // Uppercase one random alpha character.
             while (true)
             {
-                var r = rng.Next(1, s.Length);
+                int r = rng.Next(1, s.Length);
                 switch (alpha.IndexOf(s[r]) <= -1)
                 {
                     case true:
@@ -147,83 +139,73 @@ namespace Utility
             return s;
         }
 
-        public static FileVersionInfo GetFileInfo(string fileName)
-        {
-            return FileVersionInfo.GetVersionInfo(fileName);
-        }
+        public static FileVersionInfo GetFileInfo(string fileName) { return FileVersionInfo.GetVersionInfo(fileName); }
 
-        public static string GetFileName()
-        {
-            return Path.GetFileName(GetFilePathAndName());
-        }
+        public static string GetFileName() { return Path.GetFileName(GetFilePathAndName()); }
 
-        public static string GetFilePathAndName()
-        {
-            return Application.ExecutablePath;
-        }
+        public static string GetFilePathAndName() { return Application.ExecutablePath; }
 
         public static string[] GetFiles(string path, string extensions)
         {
             string[] exts = extensions.Split(',');
             string[] files = new string[0];
 
-            files = Directory.GetFiles(path, "*.*").Where(f =>
-            {
-                return (exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase)) && 
-                            !files.Any(a => {
-                                        return Path.GetFileName(a).ToLower() == Path.GetFileName(f).ToLower();
-                                      });
-
-            }).OrderBy(f => new FileInfo(f).LastWriteTime).ToArray();
+            files = Directory.GetFiles(path, "*.*")
+                             .Where(f =>
+                             {
+                                 return (exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase)) && !files.Any(a =>
+                                 {
+                                     return Path.GetFileName(a).ToLower() == Path.GetFileName(f).ToLower();
+                                 });
+                             })
+                             .OrderBy(f => new FileInfo(f).LastWriteTime)
+                             .ToArray();
 
             string[] folders = Directory.GetDirectories(path);
 
-            foreach (string folder in folders)
-            {
-                files = files.Concat(GetFiles(folder, extensions)).ToArray();
-            }
+            foreach (string folder in folders) files = files.Concat(GetFiles(folder, extensions)).ToArray();
 
             return files;
         }
 
-        public static string GetName()
-        {
-            return Assembly.GetExecutingAssembly().GetName().Name ?? "";
-        }
+        public static string GetName() { return Assembly.GetExecutingAssembly().GetName().Name ?? ""; }
 
         public static string GetNameAndVersion()
         {
-            var v = GetVersion();
+            Version v = GetVersion();
             if (v == null) return "";
 
-            return (GetName() + " " ?? "") + v.Major + "." +
-                   File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
+            return (GetName() + " " ?? "") + v.Major + "." + File.GetLastWriteTime(GetFilePathAndName()).ToString("ddMMyyyy.HHmm");
         }
 
-        public static Version GetVersion()
+        public static Form GetParentForm(Control control)
         {
-            return Assembly.GetExecutingAssembly().GetName().Version;
+            if (control == null) return null;
+            if (control is Form) return (Form)control;
+            return GetParentForm(control.Parent);
         }
+
+        public static Version GetVersion() { return Assembly.GetExecutingAssembly().GetName().Version; }
 
         public static string GetWebsiteFavIcon(string url)
         {
-            var result = "";
+            string result = "";
             switch (url.ToLower().StartsWith("http://"))
             {
                 case false when !url.ToLower().StartsWith("https://"):
                     return result;
             }
 
-            var baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
-            var w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
+            string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
+            HttpWebRequest w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
             w.AllowAutoRedirect = true;
             try
             {
-                var r = (HttpWebResponse)w.GetResponse();
-                var s = r.GetResponseStream();
+                HttpWebResponse r = (HttpWebResponse)w.GetResponse();
+                Stream s = r.GetResponseStream();
                 if (s != null)
                 {
-                    var ico = Image.FromStream(s);
+                    Image ico = Image.FromStream(s);
                     result = Convert.ToBase64String(ImageToByteArray(ico));
                 }
             }
@@ -234,9 +216,42 @@ namespace Utility
             return result;
         }
 
+        public static Image GetWebsiteFavIconAsImage(string url, bool askGoogle = true)
+        {
+            if (!url.ToLower().StartsWith("http://") && !url.ToLower().StartsWith("https://"))
+                return null;
+
+            string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
+            HttpWebRequest w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
+
+
+            w.AllowAutoRedirect = true;
+            try
+            {
+                HttpWebResponse r = (HttpWebResponse)w.GetResponse();
+                Stream s = r.GetResponseStream();
+                if (s != null) return Image.FromStream(s);
+            }
+            catch (WebException)
+            {
+                if (!askGoogle) return null;
+
+                // lets ask Google for it.
+                try
+                {
+                    return GetWebsiteFavIconAsImage("http://www.google.com/s2/favicons?sz=32&domain_url=" + baseDomain.Replace("http", "").Replace(":", "").Replace("/", ""), false);
+                }
+                catch
+                {
+                }
+            }
+
+            return null;
+        }
+
         public static byte[] ImageToByteArray(Image image)
         {
-            var ms = new MemoryStream();
+            MemoryStream ms = new MemoryStream();
             image.Save(ms, ImageFormat.Png);
             return ms.ToArray();
         }
@@ -249,10 +264,10 @@ namespace Utility
                     return false;
             }
 
-            var current = Process.GetCurrentProcess();
-            var processes = Process.GetProcessesByName(current.ProcessName);
+            Process current = Process.GetCurrentProcess();
+            Process[] processes = Process.GetProcessesByName(current.ProcessName);
 
-            foreach (var process in processes)
+            foreach (Process process in processes)
                 if (process.Id != current.Id)
                     if (Assembly.GetExecutingAssembly().Location.Replace("/", "\\") == current.MainModule?.FileName)
                     {
@@ -274,31 +289,29 @@ namespace Utility
         {
             if (img1 == null || img2 == null) return false;
 
-            var b1 = ImageToByteArray(img1);
+            byte[] b1 = ImageToByteArray(img1);
 
             return b1.SequenceEqual(img2);
         }
 
         public static bool IsUrl(string s)
         {
-            return (s.ToLower().StartsWith("http://") || s.ToLower().StartsWith("https://") ||
-                    s.ToLower().StartsWith("ftp://")) && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
+            return (s.ToLower().StartsWith("http://") || s.ToLower().StartsWith("https://") || s.ToLower().StartsWith("ftp://")) && Uri.IsWellFormedUriString(s, UriKind.RelativeOrAbsolute);
         }
 
         public static bool IsWindows7()
         {
-            var ver = Environment.OSVersion.Version;
+            Version ver = Environment.OSVersion.Version;
             return ver.Major == 6 && ver.Minor <= 1;
         }
 
-        public static Keys StringToKey(string key)
-        {
-            return (Keys)Enum.Parse(typeof(Keys), key);
-        }
+        public static void MoveFormInBounds(Form form) { MoveFormToPoint(form, form.Location); }
+
+        public static void MoveFormToCursor(Form form) { MoveFormToPoint(form, Cursor.Position); }
 
         private static void MoveFormToPoint(Form form, Point p)
         {
-            var workingArea = Screen.GetWorkingArea(p);
+            Rectangle workingArea = Screen.GetWorkingArea(p);
 
             //Vert
             if (p.Y + form.Size.Height > workingArea.Bottom) p.Y -= p.Y + form.Size.Height - workingArea.Bottom;
@@ -315,24 +328,31 @@ namespace Utility
             form.Location = p;
         }
 
-        public static void MoveFormInBounds(Form form)
+        public static string ParseEnvironmentVars(string str)
         {
-            MoveFormToPoint(form, form.Location);
-        }
+            int c = str.Count(s => s == '%');
+            if (c < 2 || c % 2 != 0) return str;
 
-        public static void MoveFormToCursor(Form form)
-        {
-            MoveFormToPoint(form, Cursor.Position);
+            string envar;
+
+            while (str.Contains("%"))
+            {
+                int start = str.IndexOf("%");
+                envar = str.Substring(start, str.IndexOf("%", start + 1) + 1);
+                str = str.Replace(envar, Environment.ExpandEnvironmentVariables(envar));
+            }
+
+            return str;
         }
 
         public static string RandomString(int size, bool lowerCase)
         {
             const string src = "abcdefghijklmnopqrstuvwxyz0123456789";
-            var sb = new StringBuilder();
-            var rng = new Random();
-            for (var i = 0; i < size; i++)
+            StringBuilder sb = new StringBuilder();
+            Random rng = new Random();
+            for (int i = 0; i < size; i++)
             {
-                var c = src[rng.Next(0, src.Length)];
+                char c = src[rng.Next(0, src.Length)];
                 sb.Append(c);
             }
 
@@ -353,13 +373,13 @@ namespace Utility
                     return image;
             }
 
-            var ratioX = (double)maxWidth / image.Width;
-            var ratioY = (double)maxHeight / image.Height;
-            var ratio = Math.Min(ratioX, ratioY);
-            var newWidth = image.Width;
-            var newHeight = image.Height;
+            double ratioX = (double)maxWidth / image.Width;
+            double ratioY = (double)maxHeight / image.Height;
+            double ratio = Math.Min(ratioX, ratioY);
+            int newWidth = image.Width;
+            int newHeight = image.Height;
 
-            var i = (int)(image.Width * ratio);
+            int i = (int)(image.Width * ratio);
             switch (i > 0)
             {
                 case true:
@@ -375,8 +395,8 @@ namespace Utility
                     break;
             }
 
-            var newImage = new Bitmap(newWidth, newHeight);
-            using (var graphics = Graphics.FromImage(newImage))
+            Bitmap newImage = new Bitmap(newWidth, newHeight);
+            using (Graphics graphics = Graphics.FromImage(newImage))
             {
                 graphics.DrawImage(image, 0, 0, newWidth, newHeight);
             }
@@ -401,24 +421,32 @@ namespace Utility
             }
         }
 
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        private static extern bool SetWindowPos(int  hWnd,            // Window handle
+                                                int  hWndInsertAfter, // Placement-order handle
+                                                int  x,               // Horizontal position
+                                                int  y,               // Vertical position
+                                                int  cx,              // Width
+                                                int  cy,              // Height
+                                                uint uFlags); // Window positioning flags
+
         public static void ShowInactiveTopmost(Form frm)
         {
             ShowWindow(frm.Handle, SwShownoactivate);
             //SetWindowPos(frm.Handle.ToInt32(), HWND_TOPMOST, frm.Left, frm.Top, frm.Width, frm.Height, SWP_NOACTIVATE);
-            SetWindowPos(frm.Handle.ToInt32(), HwndTopmost, 0, 0, 0, 0,
-                SwpNoactivate | SwpNomove | SwpNosize | SwpNoreposition);
+            SetWindowPos(frm.Handle.ToInt32(), HwndTopmost, 0, 0, 0, 0, SwpNoactivate | SwpNomove | SwpNosize | SwpNoreposition);
         }
 
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+        public static Keys StringToKey(string key) { return (Keys)Enum.Parse(typeof(Keys), key); }
+
         public static bool UseLightThemeMode()
         {
             try
             {
-                var o = Registry.GetValue(
-                    "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                    "AppsUseLightTheme", null);
+                object o = Registry.GetValue("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme", null);
                 return o is null || o.ToString() != "0";
             }
             catch
@@ -427,9 +455,9 @@ namespace Utility
             }
         }
 
-        public static void Wait(int ms)
+        public static void WaitThenDo(int ms, Action doit)
         {
-            var waitTimer = new Timer();
+            Timer waitTimer = new Timer();
             switch (ms <= 0)
             {
                 case true:
@@ -444,18 +472,9 @@ namespace Utility
             {
                 waitTimer.Enabled = false;
                 waitTimer.Stop();
+                doit();
                 waitTimer.Dispose();
             };
         }
-
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        private static extern bool SetWindowPos(
-            int hWnd, // Window handle
-            int hWndInsertAfter, // Placement-order handle
-            int x, // Horizontal position
-            int y, // Vertical position
-            int cx, // Width
-            int cy, // Height
-            uint uFlags); // Window positioning flags
     }
 }
