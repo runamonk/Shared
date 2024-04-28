@@ -23,13 +23,13 @@ namespace Icons
                 return null;
 
             fileName = Environment.ExpandEnvironmentVariables(fileName);
-            if (File.Exists(fileName) || fileName.StartsWith(ShellAppPrefix))
+            if (File.Exists(fileName) || IsShellApp(fileName))
             {
                 // don't include .ico files here, let windows ExtractAssociatedIcon, this will get the best resolution icon from the ico file.
                 string[] imageTypes = { ".png", ".tif", ".jpg", ".gif", ".bmp" };
                 if (imageTypes.Contains(Path.GetExtension(fileName))) return new Bitmap(new Bitmap(fileName, false));
 
-                if (fileName.StartsWith(ShellAppPrefix))
+                if (IsShellApp(fileName))
                     try
                     {
                         ShellObject shellFile = ShellObject.FromParsingName(fileName);
@@ -82,5 +82,7 @@ namespace Icons
                 return null;
             }
         }
+
+        public static bool IsShellApp(string toCompare) { return toCompare != null && (toCompare.ToLower().Contains("shell:") || toCompare.ToLower().Contains(ShellAppPrefix)); }
     }
 }
