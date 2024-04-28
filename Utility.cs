@@ -189,31 +189,14 @@ namespace Utility
 
         public static string GetWebsiteFavIcon(string url)
         {
-            string result = "";
-            switch (url.ToLower().StartsWith("http://"))
-            {
-                case false when !url.ToLower().StartsWith("https://"):
-                    return result;
-            }
-
-            string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
-            HttpWebRequest w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
-            w.AllowAutoRedirect = true;
             try
             {
-                HttpWebResponse r = (HttpWebResponse)w.GetResponse();
-                Stream s = r.GetResponseStream();
-                if (s != null)
-                {
-                    Image ico = Image.FromStream(s);
-                    result = Convert.ToBase64String(ImageToByteArray(ico));
-                }
+                return Convert.ToBase64String(ImageToByteArray(GetWebsiteFavIconAsImage(url)));
             }
             catch (WebException)
             {
+                return "";
             }
-
-            return result;
         }
 
         public static Image GetWebsiteFavIconAsImage(string url, bool askGoogle = true)
@@ -223,7 +206,6 @@ namespace Utility
 
             string baseDomain = new Uri(url).GetLeftPart(UriPartial.Authority);
             HttpWebRequest w = (HttpWebRequest)WebRequest.Create(baseDomain + "/favicon.ico");
-
 
             w.AllowAutoRedirect = true;
             try
