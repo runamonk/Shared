@@ -287,8 +287,6 @@ namespace Utility
             return ver.Major == 6 && ver.Minor <= 1;
         }
 
-        public static void MoveFormInBounds(Form form) { MoveFormToPoint(form, form.Location); }
-
         public static void MoveFormToCursor(Form form) { MoveFormToPoint(form, Cursor.Position); }
 
         private static void MoveFormToPoint(Form form, Point p)

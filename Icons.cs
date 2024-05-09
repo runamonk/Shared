@@ -23,6 +23,7 @@ namespace Icons
                 return null;
 
             fileName = Environment.ExpandEnvironmentVariables(fileName);
+
             if (File.Exists(fileName) || IsShellApp(fileName))
             {
                 // don't include .ico files here, let windows ExtractAssociatedIcon, this will get the best resolution icon from the ico file.
@@ -32,10 +33,9 @@ namespace Icons
                 if (IsShellApp(fileName))
                     try
                     {
-                        ShellObject shellFile = ShellObject.FromParsingName(fileName);
-                        shellFile.Thumbnail.AllowBiggerSize = true;
-                        //Bitmap b = shellFile.Thumbnail.Bitmap;
-                        Bitmap b = shellFile.Thumbnail.ExtraLargeBitmap;
+                        ShellObject so = ShellObject.FromParsingName(fileName);
+                        Bitmap b = ShellObject.FromParsingName(fileName).Thumbnail.ExtraLargeBitmap;
+
                         // Shell Apps typically have a stupid border/background, make it transparent.
                         Color c = b.GetPixel(1, 1);
                         b.MakeTransparent(c);
@@ -83,6 +83,9 @@ namespace Icons
             }
         }
 
-        public static bool IsShellApp(string toCompare) { return toCompare != null && (toCompare.ToLower().Contains("shell:") || toCompare.ToLower().Contains(ShellAppPrefix)); }
+        public static bool IsShellApp(string toCompare)
+        {
+            return toCompare != null && (toCompare.ToLower().Contains("shell:") || toCompare.ToLower().Contains(ShellAppPrefix) || toCompare.ToLower().Contains("::"));
+        }
     }
 }
