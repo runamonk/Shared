@@ -153,7 +153,7 @@ namespace Utility
             files = Directory.GetFiles(path, "*.*")
                              .Where(f =>
                              {
-                                 return (exts.Count() == 0 || exts.Contains(f.Substring(f.IndexOf('.') + 1), StringComparer.OrdinalIgnoreCase)) && !files.Any(a =>
+                                 return (exts.Count() == 0 || exts.Contains(Path.GetExtension(f).Substring(1), StringComparer.OrdinalIgnoreCase)) && !files.Any(a =>
                                  {
                                      return Path.GetFileName(a).ToLower() == Path.GetFileName(f).ToLower();
                                  });
