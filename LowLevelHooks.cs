@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,25 +10,34 @@ namespace zuul
 {
     public class LowLevelHooks
     {
-        public delegate void OnKeyEventHandler(Keys key);
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
+        public delegate void LastEventTimeUpdatedHandler();
+        public event LastEventTimeUpdatedHandler OnLastEventTimeUpdated;
+
+        public delegate void KeyWasPressedHandler();
+        public event KeyWasPressedHandler OnKeyWasPressed;
+
+        public delegate void MouseWasDiddledHandler();
+        public event MouseWasDiddledHandler OnMouseWasDiddled;
+
+        private bool doMouseThread = false;
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
         private const int WM_SYSKEYDOWN = 0x0104;
         private const int VK_LMBUTTON = 0x01;
         private const int VK_RMBUTTON = 0x02;
         private const int VK_MMBUTTON = 0x04;
-        
+        private const string activeChars = "abcdefghijklmnopqrstuvwxyz0123456789!£$~¬`{}[],.<>/?_+-=";
+
         private readonly LowLevelKeyboardProc keyboardProc;
 
-        private bool doEventThread;
         private IntPtr keyboardHookId = IntPtr.Zero;
-
-        private Thread eventThread;
+        private Thread mouseActivityThread;
 
         public DateTime LastEventTime = DateTime.Now;
-        public OnKeyEventHandler OnKeyPress;
+        public DateTime LastKeyEventTime = DateTime.Now;
+        public DateTime LastMouseEventTime = DateTime.Now;
         
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
@@ -50,7 +60,7 @@ namespace zuul
             keyboardProc = HookCallback; 
         }
 
-        private void doEvents()
+        private void checkMouseActivity()
         {
             short lButtonState = GetKeyState(VK_LMBUTTON);
             short rButtonState = GetKeyState(VK_RMBUTTON);
@@ -58,12 +68,13 @@ namespace zuul
             int cursorX = Cursor.Position.X;
             int cursorY = Cursor.Position.Y;
 
-            bool WasKeyChanged(ref short oldKeyState, int key)
+            bool WasMouseClicked(ref short oldKeyState, int key)
             {
                 short tmpState = GetKeyState(key);
                 if (tmpState != oldKeyState)
                 {
                     oldKeyState = tmpState;
+                    SetLastMouseEventTimeToNow();
                     return true;
                 }
 
@@ -76,20 +87,21 @@ namespace zuul
                 {
                     cursorX = Cursor.Position.X;
                     cursorY = Cursor.Position.Y;
+                    SetLastMouseEventTimeToNow();
                     return true;
                 }
                 return false;
             }
 
-            while (doEventThread)
+            while (doMouseThread)
             {
                 Thread.Sleep(100);
 
-                if (WasKeyChanged(ref lButtonState, VK_LMBUTTON) || 
-                    WasKeyChanged(ref rButtonState, VK_RMBUTTON) || 
-                    WasKeyChanged(ref mButtonState, VK_MMBUTTON) || 
+                if (WasMouseClicked(ref lButtonState, VK_LMBUTTON) ||
+                    WasMouseClicked(ref rButtonState, VK_RMBUTTON) ||
+                    WasMouseClicked(ref mButtonState, VK_MMBUTTON) || 
                     HasCursorMoved())
-                   SetLastEventTimeToNow();
+                   SetLastMouseEventTimeToNow();
 
                 Application.DoEvents();
             }
@@ -97,10 +109,9 @@ namespace zuul
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
-            {
-                OnKeyPress?.Invoke((Keys)Marshal.ReadInt32(lParam));
-                SetLastEventTimeToNow();
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && (activeChars.IndexOf(((Keys)Marshal.ReadInt32(lParam)).ToString().ToLower()) > -1))
+            {          
+                SetLastKeyEventTimeToNow();
             }
 
             return CallNextHookEx(keyboardHookId, nCode, wParam, lParam);
@@ -117,25 +128,38 @@ namespace zuul
 
         public void SetLastEventTimeToNow() 
         { 
-            LastEventTime = DateTime.Now; 
+            LastEventTime = DateTime.Now;
+            OnLastEventTimeUpdated?.Invoke();
+        }
+
+        public void SetLastKeyEventTimeToNow()
+        {
+            LastKeyEventTime = DateTime.Now;
+            OnKeyWasPressed?.Invoke();
+            SetLastEventTimeToNow();
+        }
+
+        public void SetLastMouseEventTimeToNow()
+        {
+            LastMouseEventTime = DateTime.Now;
+            OnMouseWasDiddled?.Invoke();
+            SetLastEventTimeToNow();
         }
 
         public void Start()
         {
             keyboardHookId = SetHook(keyboardProc, WH_KEYBOARD_LL);
-            doEventThread = true;
-
-            eventThread = new Thread(new ThreadStart(doEvents));
-            eventThread.Start();
+            doMouseThread = true;
+            mouseActivityThread = new Thread(new ThreadStart(checkMouseActivity));
+            mouseActivityThread.Start();
         }
 
         public void Stop()
         {
+            doMouseThread = false;
             UnhookWindowsHookEx(keyboardHookId);
-
-            doEventThread = false;
-            if (eventThread.ThreadState == ThreadState.Running)
-                eventThread.Abort();
+            if (mouseActivityThread.ThreadState == ThreadState.Running)
+                mouseActivityThread.Abort();
         }
     }
 }
