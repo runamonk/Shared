@@ -238,6 +238,21 @@ namespace Utility
             return ms.ToArray();
         }
 
+        public static bool IsDesignerHosted(Control myControl)
+        {
+            if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+                return true;
+
+            Control ctrl = myControl;
+            while (ctrl != null)
+            {
+                if ((ctrl.Site != null) && ctrl.Site.DesignMode)
+                    return true;
+                ctrl = ctrl.Parent;
+            }
+            return false;
+        }
+
         public static bool IsRunningDoShow()
         {
             switch (Debugger.IsAttached)
