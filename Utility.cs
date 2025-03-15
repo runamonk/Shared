@@ -438,6 +438,18 @@ namespace Utility
 
         public static Keys StringToKey(string key) { return (Keys)Enum.Parse(typeof(Keys), key); }
 
+        public static string StringToBase64(string str)
+        {
+            byte[] plainTextBytes = Encoding.UTF8.GetBytes(str);
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static string Base64toString(string baseStr)
+        {
+            byte[] base64EncodedBytes = Convert.FromBase64String(baseStr);
+            return Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
         public static bool UseLightThemeMode()
         {
             try
