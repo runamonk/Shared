@@ -59,7 +59,7 @@ namespace Utility
             }
         }
 
-        public static ToolStripMenuItem AddMenuItem(ToolStrip menu, string caption, EventHandler @event)
+        public static ToolStripMenuItem AddMenuItem(ToolStrip menu, string caption, EventHandler @event, Shortcut userShortcut = Shortcut.None)
         {
             switch (caption)
             {
@@ -72,6 +72,8 @@ namespace Utility
             if (@event != null) t.Click += @event;
 
             menu.Items.Add(t);
+            t.Name = caption;
+            t.ShortcutKeys = (Keys)userShortcut;
             return t;
         }
 
@@ -413,7 +415,7 @@ namespace Utility
             else
             {
                 control.ForeColor = Color.White;
-                control.BackColor = Color.FromArgb(45, 45, 48);
+                control.BackColor = Color.FromArgb(45, 45, 48);               
             }
         }
 
