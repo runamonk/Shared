@@ -32,6 +32,8 @@ namespace Utility
 
         private const uint SwpNosize = 0x0001;
 
+        public static Color TransparentColor = Color.FromArgb(0, 255, 255, 255); // use this in place of Color.Transparent because using Color.Transparent where it's use is blocked in some cases.
+
         public static bool StartWithWindows
         {
             get
