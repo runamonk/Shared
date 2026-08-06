@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -28,7 +27,6 @@ namespace zuul
         private const int VK_LMBUTTON = 0x01;
         private const int VK_RMBUTTON = 0x02;
         private const int VK_MMBUTTON = 0x04;
-        private const string activeChars = "abcdefghijklmnopqrstuvwxyz0123456789!£$~¬`{}[],.<>/?_+-=";
 
         private readonly LowLevelKeyboardProc keyboardProc;
 
@@ -74,7 +72,6 @@ namespace zuul
                 if (tmpState != oldKeyState)
                 {
                     oldKeyState = tmpState;
-                    SetLastMouseEventTimeToNow();
                     return true;
                 }
 
@@ -87,7 +84,6 @@ namespace zuul
                 {
                     cursorX = Cursor.Position.X;
                     cursorY = Cursor.Position.Y;
-                    SetLastMouseEventTimeToNow();
                     return true;
                 }
                 return false;
@@ -109,7 +105,8 @@ namespace zuul
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && (activeChars.IndexOf(((Keys)Marshal.ReadInt32(lParam)).ToString().ToLower()) > -1))
+            if (nCode >= 0 &&
+                (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
             {          
                 SetLastKeyEventTimeToNow();
             }
